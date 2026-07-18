@@ -8,89 +8,93 @@
  * recovery/behavior-change product. Light + dark, driven by the shadcn token set
  * every UI primitive consumes. This is the single source of truth for theme.
  */
+/*
+ * Neutral grays as the base, green reserved as the accent — so the UI reads
+ * clean rather than uniformly green-tinted. One token set drives every primitive.
+ */
 :root {
   --radius: 0.75rem;
 
-  --background: oklch(0.99 0.005 150);
-  --foreground: oklch(0.22 0.02 155);
+  --background: oklch(0.995 0 0);
+  --foreground: oklch(0.21 0.006 165);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.02 155);
+  --card-foreground: oklch(0.21 0.006 165);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.02 155);
+  --popover-foreground: oklch(0.21 0.006 165);
 
-  --primary: oklch(0.62 0.16 155);
-  --primary-foreground: oklch(0.99 0.01 150);
+  --primary: oklch(0.58 0.15 156);
+  --primary-foreground: oklch(0.99 0.01 156);
 
-  --secondary: oklch(0.96 0.02 155);
-  --secondary-foreground: oklch(0.3 0.04 155);
+  --secondary: oklch(0.965 0.002 165);
+  --secondary-foreground: oklch(0.25 0.006 165);
 
-  --muted: oklch(0.97 0.01 155);
-  --muted-foreground: oklch(0.52 0.02 155);
+  --muted: oklch(0.965 0.002 165);
+  --muted-foreground: oklch(0.5 0.006 165);
 
-  --accent: oklch(0.95 0.03 160);
-  --accent-foreground: oklch(0.3 0.05 155);
+  --accent: oklch(0.95 0.03 158);
+  --accent-foreground: oklch(0.32 0.06 156);
 
   --destructive: oklch(0.58 0.2 25);
   --destructive-foreground: oklch(0.99 0.01 25);
 
-  --border: oklch(0.92 0.01 155);
-  --input: oklch(0.92 0.01 155);
-  --ring: oklch(0.62 0.16 155);
+  --border: oklch(0.9 0.003 165);
+  --input: oklch(0.9 0.003 165);
+  --ring: oklch(0.58 0.15 156);
 }
 
 .dark {
-  --background: oklch(0.17 0.015 155);
-  --foreground: oklch(0.95 0.01 150);
+  --background: oklch(0.165 0.006 165);
+  --foreground: oklch(0.96 0.003 165);
 
-  --card: oklch(0.21 0.02 155);
-  --card-foreground: oklch(0.95 0.01 150);
+  --card: oklch(0.205 0.008 165);
+  --card-foreground: oklch(0.96 0.003 165);
 
-  --popover: oklch(0.21 0.02 155);
-  --popover-foreground: oklch(0.95 0.01 150);
+  --popover: oklch(0.205 0.008 165);
+  --popover-foreground: oklch(0.96 0.003 165);
 
-  --primary: oklch(0.7 0.16 155);
-  --primary-foreground: oklch(0.18 0.03 155);
+  --primary: oklch(0.72 0.16 156);
+  --primary-foreground: oklch(0.16 0.02 156);
 
-  --secondary: oklch(0.27 0.02 155);
-  --secondary-foreground: oklch(0.95 0.01 150);
+  --secondary: oklch(0.26 0.008 165);
+  --secondary-foreground: oklch(0.96 0.003 165);
 
-  --muted: oklch(0.27 0.02 155);
-  --muted-foreground: oklch(0.7 0.02 155);
+  --muted: oklch(0.26 0.008 165);
+  --muted-foreground: oklch(0.71 0.008 165);
 
-  --accent: oklch(0.32 0.04 160);
-  --accent-foreground: oklch(0.95 0.01 150);
+  --accent: oklch(0.3 0.03 158);
+  --accent-foreground: oklch(0.96 0.003 165);
 
-  --destructive: oklch(0.65 0.2 25);
+  --destructive: oklch(0.66 0.2 25);
   --destructive-foreground: oklch(0.98 0.01 25);
 
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0.16 155);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.72 0.16 156);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: oklch(0.17 0.015 155);
-    --foreground: oklch(0.95 0.01 150);
-    --card: oklch(0.21 0.02 155);
-    --card-foreground: oklch(0.95 0.01 150);
-    --popover: oklch(0.21 0.02 155);
-    --popover-foreground: oklch(0.95 0.01 150);
-    --primary: oklch(0.7 0.16 155);
-    --primary-foreground: oklch(0.18 0.03 155);
-    --secondary: oklch(0.27 0.02 155);
-    --secondary-foreground: oklch(0.95 0.01 150);
-    --muted: oklch(0.27 0.02 155);
-    --muted-foreground: oklch(0.7 0.02 155);
-    --accent: oklch(0.32 0.04 160);
-    --accent-foreground: oklch(0.95 0.01 150);
-    --destructive: oklch(0.65 0.2 25);
+    --background: oklch(0.165 0.006 165);
+    --foreground: oklch(0.96 0.003 165);
+    --card: oklch(0.205 0.008 165);
+    --card-foreground: oklch(0.96 0.003 165);
+    --popover: oklch(0.205 0.008 165);
+    --popover-foreground: oklch(0.96 0.003 165);
+    --primary: oklch(0.72 0.16 156);
+    --primary-foreground: oklch(0.16 0.02 156);
+    --secondary: oklch(0.26 0.008 165);
+    --secondary-foreground: oklch(0.96 0.003 165);
+    --muted: oklch(0.26 0.008 165);
+    --muted-foreground: oklch(0.71 0.008 165);
+    --accent: oklch(0.3 0.03 158);
+    --accent-foreground: oklch(0.96 0.003 165);
+    --destructive: oklch(0.66 0.2 25);
     --destructive-foreground: oklch(0.98 0.01 25);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.7 0.16 155);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 16%);
+    --ring: oklch(0.72 0.16 156);
   }
 }
 
@@ -115,8 +119,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -132,6 +137,17 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings use the warmer display face with tightened tracking. */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 /* Ambient, calming backdrop — soft green auras fixed behind the content. */
@@ -139,9 +155,8 @@ body {
   position: relative;
   background-color: var(--background);
   background-image:
-    radial-gradient(60rem 60rem at 15% -10%, oklch(0.62 0.16 155 / 0.10), transparent 60%),
-    radial-gradient(50rem 50rem at 100% 0%, oklch(0.7 0.14 190 / 0.08), transparent 55%),
-    radial-gradient(40rem 40rem at 50% 120%, oklch(0.62 0.16 155 / 0.07), transparent 60%);
+    radial-gradient(55rem 55rem at 12% -12%, oklch(0.62 0.16 156 / 0.06), transparent 55%),
+    radial-gradient(45rem 45rem at 100% 0%, oklch(0.62 0.16 156 / 0.04), transparent 50%);
   background-attachment: fixed;
 }
 

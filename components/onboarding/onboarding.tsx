@@ -1,10 +1,10 @@
 "use client";
 
-import { AlertTriangle, Brain, RotateCcw, Sparkles } from "lucide-react";
+import { AlertTriangle, Brain, RotateCcw } from "lucide-react";
 
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
-import { PlanSkeleton } from "@/components/plan/plan-skeleton";
+import { PlanGenerating } from "@/components/plan/plan-generating";
 import { StatusPanel } from "@/components/shared/status-panel";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -23,7 +23,7 @@ export function Onboarding() {
   const { status, error, submit, retry } = useOnboarding();
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+    <main className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 lg:py-14">
       <div className="mb-4 flex items-center justify-end gap-1">
         <ThemeToggle />
         <SignOutButton />
@@ -36,16 +36,31 @@ export function Onboarding() {
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           <span className="text-gradient">Rewire</span>
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+        <p className="mx-auto mt-3 max-w-md text-muted-foreground">
           Break a bad habit for good. Tell Rewire what you&apos;re changing and
-          get a personalized, AI-built recovery plan — with nudges, coping
-          strategies, an adaptive coach, and in-the-moment support.
+          get a personalized, AI-built recovery plan with an adaptive coach.
         </p>
       </FadeIn>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-2">
-          <Card className="lg:sticky lg:top-6">
+      <FadeIn delay={0.05}>
+        {status === "error" && (
+          <StatusPanel
+            icon={AlertTriangle}
+            tone="error"
+            title="Couldn't build your plan"
+            message={error ?? "Please try again."}
+          >
+            <Button onClick={retry} variant="outline">
+              <RotateCcw aria-hidden />
+              Try again
+            </Button>
+          </StatusPanel>
+        )}
+
+        {status === "loading" ? (
+          <PlanGenerating />
+        ) : status !== "error" ? (
+          <Card>
             <CardHeader>
               <CardTitle>Start your journey</CardTitle>
               <CardDescription>
@@ -53,38 +68,11 @@ export function Onboarding() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <OnboardingForm
-                onSubmit={submit}
-                isLoading={status === "loading"}
-              />
+              <OnboardingForm onSubmit={submit} isLoading={false} />
             </CardContent>
           </Card>
-        </div>
-
-        <section className="lg:col-span-3" aria-live="polite">
-          {status === "idle" && (
-            <StatusPanel
-              icon={Sparkles}
-              title="Your recovery plan will appear here"
-              message="Fill in your habit and we'll build a personalized plan with milestones, coping strategies, and daily nudges."
-            />
-          )}
-          {status === "loading" && <PlanSkeleton />}
-          {status === "error" && (
-            <StatusPanel
-              icon={AlertTriangle}
-              tone="error"
-              title="Something went wrong"
-              message={error ?? "Please try again."}
-            >
-              <Button onClick={retry} variant="outline">
-                <RotateCcw aria-hidden />
-                Try again
-              </Button>
-            </StatusPanel>
-          )}
-        </section>
-      </div>
+        ) : null}
+      </FadeIn>
     </main>
   );
 }

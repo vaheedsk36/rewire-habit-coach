@@ -104,7 +104,7 @@ export function ProgressPanel({ journey }: { journey: JourneyRecord }) {
         {/* Heatmap */}
         <div className="space-y-2">
           <div
-            className="grid grid-cols-7 gap-1"
+            className="grid w-fit grid-cols-[repeat(7,1.5rem)] gap-1.5"
             role="img"
             aria-label={`Check-in calendar for the last ${shown} days`}
           >

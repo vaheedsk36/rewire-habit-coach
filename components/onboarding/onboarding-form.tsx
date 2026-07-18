@@ -3,28 +3,31 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import {
+  Ban,
+  Clock,
+  Gauge,
+  Heart,
+  Loader2,
+  Sparkles,
+  Target,
+  TrendingDown,
+  Wand2,
+} from "lucide-react";
 
 import { habitInputSchema } from "@/types/habit";
 import type { HabitInput } from "@/types";
-import { useSuggest } from "@/hooks/use-suggest";
 import {
-  GOAL_TYPES,
   HABIT_CATEGORIES,
   TIMEFRAME_OPTIONS,
   TRIGGER_OPTIONS,
 } from "@/constants/habits";
 import { cn } from "@/lib/utils";
+import { useSuggest } from "@/hooks/use-suggest";
+import { motion } from "@/components/motion/motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Field } from "@/components/shared/field";
 
 const DEFAULT_VALUES: Partial<HabitInput> = {
@@ -43,6 +46,7 @@ interface OnboardingFormProps {
   isLoading: boolean;
 }
 
+/** A tactile, visual onboarding form — pickable cards and chips over dropdowns. */
 export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
   const {
     register,
@@ -62,8 +66,7 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
   const { status: suggestStatus, suggestion, error: suggestError, suggest } =
     useSuggest();
 
-  // When the AI returns suggestions, prefill every field except the habit name
-  // (that's the user's own input). Values stay fully editable.
+  // When the AI returns suggestions, prefill every field except the habit name.
   useEffect(() => {
     if (!suggestion) return;
     const opts = { shouldValidate: true, shouldDirty: true } as const;
@@ -79,7 +82,7 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6"
+      className="space-y-7"
       noValidate
       aria-label="Set up your habit"
     >
@@ -92,140 +95,183 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
         <Input
           id="habitName"
           placeholder="Instagram scrolling"
+          className="h-11 text-base"
           {...register("habitName")}
         />
       </Field>
 
-      <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-3">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Not sure how to fill this out?
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={!habitName?.trim() || suggestStatus === "loading"}
-            onClick={() => suggest(habitName)}
-          >
-            {suggestStatus === "loading" ? (
-              <Loader2 className="animate-spin" aria-hidden />
-            ) : (
-              <Wand2 aria-hidden />
-            )}
-            Autofill with AI
-          </Button>
-        </div>
-        {suggestStatus === "error" && (
-          <p className="mt-2 text-sm text-destructive" role="alert">
-            {suggestError ?? "Couldn't generate suggestions. Try again."}
-          </p>
+      {/* Flashy AI autofill CTA */}
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.98 }}
+        disabled={!habitName?.trim() || suggestStatus === "loading"}
+        onClick={() => suggest(habitName)}
+        className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-primary to-emerald-500 px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-shadow hover:shadow-primary/40 disabled:opacity-50 disabled:shadow-none"
+      >
+        {suggestStatus === "loading" ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+        ) : (
+          <Wand2 className="size-4 transition-transform group-hover:rotate-12" aria-hidden />
         )}
-      </div>
+        Autofill the rest with AI
+      </motion.button>
+      {suggestStatus === "error" && (
+        <p className="-mt-4 text-sm text-destructive" role="alert">
+          {suggestError ?? "Couldn't generate suggestions. Try again."}
+        </p>
+      )}
+
+      {/* Category — visual card grid */}
+      <Controller
+        control={control}
+        name="category"
+        render={({ field }) => (
+          <Field
+            label="Category"
+            htmlFor="category"
+            error={errors.category?.message}
+          >
+            <div id="category" className="grid grid-cols-3 gap-2">
+              {HABIT_CATEGORIES.map((c) => {
+                const selected = field.value === c.value;
+                return (
+                  <motion.button
+                    key={c.value}
+                    type="button"
+                    whileTap={{ scale: 0.95 }}
+                    aria-pressed={selected}
+                    onClick={() => field.onChange(c.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-xl border p-3 text-center transition-all",
+                      selected
+                        ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary"
+                        : "border-border hover:border-primary/40 hover:bg-muted",
+                    )}
+                  >
+                    <span className="text-2xl">{c.emoji}</span>
+                    <span className="text-xs font-medium leading-tight">
+                      {c.label}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </Field>
+        )}
+      />
+
+      {/* Goal — segmented toggle */}
+      <Controller
+        control={control}
+        name="goalType"
+        render={({ field }) => (
+          <Field label="Your goal" htmlFor="goalType" error={errors.goalType?.message}>
+            <div id="goalType" className="grid grid-cols-2 gap-2">
+              {[
+                { value: "reduce", label: "Cut down", icon: TrendingDown },
+                { value: "quit", label: "Quit completely", icon: Ban },
+              ].map((g) => {
+                const selected = field.value === g.value;
+                return (
+                  <motion.button
+                    key={g.value}
+                    type="button"
+                    whileTap={{ scale: 0.97 }}
+                    aria-pressed={selected}
+                    onClick={() => field.onChange(g.value)}
+                    className={cn(
+                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-all",
+                      selected
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border hover:border-primary/40 hover:bg-muted",
+                    )}
+                  >
+                    <g.icon className="size-4" aria-hidden />
+                    {g.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </Field>
+        )}
+      />
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field
-          label="Category"
-          htmlFor="category"
-          error={errors.category?.message}
-        >
-          <Controller
-            control={control}
-            name="category"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="category" className="w-full">
-                  <SelectValue placeholder="Choose a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {HABIT_CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.emoji} {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </Field>
-
-        <Field label="Goal" htmlFor="goalType" error={errors.goalType?.message}>
-          <Controller
-            control={control}
-            name="goalType"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="goalType" className="w-full">
-                  <SelectValue placeholder="Quit or cut down" />
-                </SelectTrigger>
-                <SelectContent>
-                  {GOAL_TYPES.map((g) => (
-                    <SelectItem key={g.value} value={g.value}>
-                      {g.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </Field>
-
         <Field
           label="How much now?"
           htmlFor="currentAmount"
           hint="e.g. 4 hours/day"
           error={errors.currentAmount?.message}
         >
-          <Input
-            id="currentAmount"
-            placeholder="4 hours/day"
-            {...register("currentAmount")}
-          />
+          <div className="relative">
+            <Gauge className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input
+              id="currentAmount"
+              placeholder="4 hours/day"
+              className="h-11 pl-9"
+              {...register("currentAmount")}
+            />
+          </div>
         </Field>
 
-        <Field
-          label="Timeframe"
-          htmlFor="timeframeDays"
-          error={errors.timeframeDays?.message}
-        >
-          <Controller
-            control={control}
-            name="timeframeDays"
-            render={({ field }) => (
-              <Select
-                value={String(field.value)}
-                onValueChange={(v) => field.onChange(Number(v))}
-              >
-                <SelectTrigger id="timeframeDays" className="w-full">
-                  <SelectValue placeholder="Pick a timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEFRAME_OPTIONS.map((t) => (
-                    <SelectItem key={t.value} value={String(t.value)}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </Field>
+        {goalType === "reduce" ? (
+          <Field
+            label="Your target"
+            htmlFor="targetAmount"
+            hint="e.g. under 1 hour/day"
+            error={errors.targetAmount?.message}
+          >
+            <div className="relative">
+              <Target className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input
+                id="targetAmount"
+                placeholder="under 1 hour/day"
+                className="h-11 pl-9"
+                {...register("targetAmount")}
+              />
+            </div>
+          </Field>
+        ) : (
+          <div className="hidden sm:block" aria-hidden />
+        )}
       </div>
 
-      {goalType === "reduce" && (
-        <Field
-          label="Your target"
-          htmlFor="targetAmount"
-          hint="e.g. under 1 hour/day"
-          error={errors.targetAmount?.message}
-        >
-          <Input
-            id="targetAmount"
-            placeholder="under 1 hour/day"
-            {...register("targetAmount")}
-          />
-        </Field>
-      )}
+      {/* Timeframe — chips */}
+      <Controller
+        control={control}
+        name="timeframeDays"
+        render={({ field }) => (
+          <Field
+            label="Timeframe"
+            htmlFor="timeframeDays"
+            error={errors.timeframeDays?.message}
+          >
+            <div id="timeframeDays" className="flex flex-wrap gap-2">
+              {TIMEFRAME_OPTIONS.map((t) => {
+                const selected = field.value === t.value;
+                return (
+                  <motion.button
+                    key={t.value}
+                    type="button"
+                    whileTap={{ scale: 0.95 }}
+                    aria-pressed={selected}
+                    onClick={() => field.onChange(t.value)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-all",
+                      selected
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border hover:border-primary/40 hover:bg-muted",
+                    )}
+                  >
+                    <Clock className="size-3.5" aria-hidden />
+                    {t.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </Field>
+        )}
+      />
 
       <Field
         label="Why does this matter to you?"
@@ -241,6 +287,7 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
         />
       </Field>
 
+      {/* Triggers — chips */}
       <Controller
         control={control}
         name="triggers"
@@ -255,9 +302,10 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
               {TRIGGER_OPTIONS.map((t) => {
                 const selected = field.value?.includes(t.value);
                 return (
-                  <button
+                  <motion.button
                     key={t.value}
                     type="button"
+                    whileTap={{ scale: 0.95 }}
                     aria-pressed={selected}
                     onClick={() =>
                       field.onChange(
@@ -267,14 +315,14 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
                       )
                     }
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                      "rounded-full border px-3.5 py-1.5 text-sm transition-all",
                       selected
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background hover:bg-muted",
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-background hover:border-primary/40 hover:bg-muted",
                     )}
                   >
                     {t.label}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -282,19 +330,26 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
         )}
       />
 
-      <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="animate-spin" aria-hidden />
-            Building your plan…
-          </>
-        ) : (
-          <>
-            <Sparkles aria-hidden />
-            Build my recovery plan
-          </>
-        )}
-      </Button>
+      <motion.div whileTap={{ scale: 0.99 }}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isLoading}
+          className="h-12 w-full bg-gradient-to-r from-primary to-emerald-500 text-base font-semibold shadow-lg shadow-primary/20 transition-shadow hover:shadow-primary/40"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="animate-spin" aria-hidden />
+              Building your plan…
+            </>
+          ) : (
+            <>
+              <Heart aria-hidden />
+              Build my recovery plan
+            </>
+          )}
+        </Button>
+      </motion.div>
     </form>
   );
 }
