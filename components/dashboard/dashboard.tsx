@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Bell, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -9,11 +10,21 @@ import type { CheckIn, JourneyRecord } from "@/types";
 import { categoryLabel } from "@/constants/habits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PlanView } from "@/components/plan/plan-view";
 import { TrackerCard } from "@/components/tracker/tracker-card";
-import { SosPanel } from "@/components/sos/sos-panel";
-import { CoachChat } from "@/components/coach/coach-chat";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+
+// Below-the-fold, interaction-only widgets — lazy-loaded so they stay out of the
+// initial dashboard bundle. Neither needs SSR (both are purely client-interactive).
+const SosPanel = dynamic(
+  () => import("@/components/sos/sos-panel").then((m) => m.SosPanel),
+  { ssr: false, loading: () => <Skeleton className="h-10 w-full rounded-lg" /> },
+);
+const CoachChat = dynamic(
+  () => import("@/components/coach/coach-chat").then((m) => m.CoachChat),
+  { ssr: false, loading: () => <Skeleton className="h-64 w-full rounded-xl" /> },
+);
 
 interface DashboardProps {
   journey: JourneyRecord;

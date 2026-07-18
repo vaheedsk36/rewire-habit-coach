@@ -7,7 +7,6 @@ export * from "./coach";
 
 import type { RecoveryPlan } from "./plan";
 import type { SosResponse } from "./sos";
-import type { JourneyRecord } from "./tracking";
 
 /** Typed error codes shared across API routes and the client. */
 export type ErrorCode =
@@ -30,4 +29,3 @@ export type Result<T> =
 export type PlanResult = Result<RecoveryPlan>;
 export type SosResult = Result<SosResponse>;
 export type HabitResult = Result<{ habitId: string }>;
-export type JourneyResult = Result<JourneyRecord>;
