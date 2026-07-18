@@ -24,7 +24,7 @@ interface PlanViewProps {
 export function PlanView({ plan }: PlanViewProps) {
   return (
     <div className="space-y-4">
-      <Card className="border-primary/30 bg-primary/5">
+      <Card className="border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
         <CardHeader>
           <div className="flex items-center gap-2 text-primary">
             <Sparkles className="size-5" aria-hidden />
@@ -85,7 +85,10 @@ export function PlanView({ plan }: PlanViewProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {plan.copingStrategies.map((s, i) => (
-              <div key={i} className="rounded-lg border p-3">
+              <div
+                key={i}
+                className="rounded-lg border p-3 transition-colors hover:border-primary/40"
+              >
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <p className="font-medium">{s.title}</p>
                   <Badge variant="secondary">{s.when}</Badge>
@@ -106,7 +109,10 @@ export function PlanView({ plan }: PlanViewProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {plan.replacementBehaviors.map((r, i) => (
-              <div key={i} className="rounded-lg border p-3">
+              <div
+                key={i}
+                className="rounded-lg border p-3 transition-colors hover:border-primary/40"
+              >
                 <p className="font-medium">{r.behavior}</p>
                 <p className="text-sm text-muted-foreground">{r.description}</p>
               </div>

@@ -8,6 +8,8 @@ import { PlanSkeleton } from "@/components/plan/plan-skeleton";
 import { StatusPanel } from "@/components/shared/status-panel";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { FadeIn } from "@/components/motion/motion";
 import {
   Card,
   CardContent,
@@ -22,21 +24,24 @@ export function Onboarding() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex items-center justify-end gap-1">
+        <ThemeToggle />
         <SignOutButton />
       </div>
 
-      <header className="mb-8 text-center">
-        <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <Brain className="size-6" aria-hidden />
+      <FadeIn className="mb-8 text-center">
+        <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20">
+          <Brain className="size-7" aria-hidden />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Rewire</h1>
-        <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <span className="text-gradient">Rewire</span>
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
           Break a bad habit for good. Tell Rewire what you&apos;re changing and
           get a personalized, AI-built recovery plan — with nudges, coping
           strategies, an adaptive coach, and in-the-moment support.
         </p>
-      </header>
+      </FadeIn>
 
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-2">

@@ -1,11 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Flame, Loader2, ThumbsDown, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Flame,
+  Heart,
+  Loader2,
+  Sparkles,
+  ThumbsDown,
+  Trophy,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import type { CheckIn, JourneyRecord } from "@/types";
 import { currentStreak, daysSince, todayISO, totalWins } from "@/lib/streak";
+import { celebrate } from "@/lib/confetti";
+import { useReframe } from "@/hooks/use-reframe";
 import {
   Card,
   CardContent,
@@ -20,12 +32,13 @@ interface TrackerCardProps {
   onCheckIn: (checkIn: CheckIn) => Promise<void>;
 }
 
-/** Daily check-in + streak tracking. Writes go through the DB via the parent. */
+/** Daily check-in + streak tracking, with confetti on wins and an AI reframe on slips. */
 export function TrackerCard({ journey, onCheckIn }: TrackerCardProps) {
   const today = todayISO();
   const loggedToday = journey.checkIns.find((c) => c.date === today);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const reframe = useReframe();
 
   const streak = currentStreak(journey.checkIns);
   const wins = totalWins(journey.checkIns);
@@ -33,14 +46,22 @@ export function TrackerCard({ journey, onCheckIn }: TrackerCardProps) {
 
   async function log(status: CheckIn["status"]) {
     setSubmitting(true);
+    const trimmedNote = note.trim() || undefined;
     try {
-      await onCheckIn({ date: today, status, note: note.trim() || undefined });
+      await onCheckIn({ date: today, status, note: trimmedNote });
       setNote("");
-      toast.success(
-        status === "win"
-          ? "Logged a win. Keep the streak alive 🔥"
-          : "Logged — a slip isn't the end. Tomorrow's a fresh day.",
-      );
+      if (status === "win") {
+        celebrate();
+        toast.success("Logged a win. Keep the streak alive 🔥");
+      } else {
+        toast("Logged. A slip isn't the end — let's reframe it.");
+        // Turn the slip into a compassionate, adaptive recovery moment.
+        void reframe.request({
+          habitName: journey.habit.habitName,
+          motivation: journey.habit.motivation,
+          trigger: trimmedNote?.slice(0, 120),
+        });
+      }
     } catch {
       toast.error("Couldn't save your check-in. Try again.");
     } finally {
@@ -110,8 +131,57 @@ export function TrackerCard({ journey, onCheckIn }: TrackerCardProps) {
             </div>
           </div>
         )}
+
+        {(reframe.status === "loading" || reframe.status === "success") && (
+          <ReframePanel reframe={reframe} />
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+function ReframePanel({ reframe }: { reframe: ReturnType<typeof useReframe> }) {
+  if (reframe.status === "loading") {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin text-primary" aria-hidden />
+        Finding a kinder way to look at this…
+      </div>
+    );
+  }
+
+  const r = reframe.response;
+  if (!r) return null;
+
+  return (
+    <div className="space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
+          <Heart className="size-4" aria-hidden />
+          A gentler take
+        </p>
+        <button
+          type="button"
+          aria-label="Dismiss"
+          onClick={reframe.reset}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+      <p className="text-sm text-foreground/90">{r.message}</p>
+      <div className="flex items-start gap-2 rounded-md bg-background/70 p-2.5">
+        <ArrowRight className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+        <p className="text-sm">
+          <span className="font-medium">Try this now: </span>
+          {r.nextStep}
+        </p>
+      </div>
+      <p className="flex items-start gap-1.5 text-sm text-muted-foreground italic">
+        <Sparkles className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
+        {r.affirmation}
+      </p>
+    </div>
   );
 }
 
@@ -125,7 +195,7 @@ function Stat({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border p-3">
+    <div className="rounded-lg border p-3 transition-colors hover:border-primary/40">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         <Icon className="size-4" aria-hidden />
         <span className="text-xs">{label}</span>

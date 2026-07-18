@@ -48,12 +48,14 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="glass w-full max-w-sm shadow-xl ring-1 ring-border/50">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <Brain className="size-6" aria-hidden />
+        <div className="mx-auto mb-2 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20">
+          <Brain className="size-7" aria-hidden />
         </div>
-        <CardTitle>Welcome to Rewire</CardTitle>
+        <CardTitle className="text-2xl">
+          Welcome to <span className="text-gradient">Rewire</span>
+        </CardTitle>
         <CardDescription>
           {mode === "sign_in"
             ? "Sign in to continue your journey."

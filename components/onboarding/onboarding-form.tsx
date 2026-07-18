@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Wand2 } from "lucide-react";
 
 import { habitInputSchema } from "@/types/habit";
 import type { HabitInput } from "@/types";
+import { useSuggest } from "@/hooks/use-suggest";
 import {
   GOAL_TYPES,
   HABIT_CATEGORIES,
@@ -47,6 +49,7 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<HabitInput>({
     resolver: zodResolver(habitInputSchema),
@@ -54,6 +57,24 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
   });
 
   const goalType = watch("goalType");
+  const habitName = watch("habitName");
+
+  const { status: suggestStatus, suggestion, error: suggestError, suggest } =
+    useSuggest();
+
+  // When the AI returns suggestions, prefill every field except the habit name
+  // (that's the user's own input). Values stay fully editable.
+  useEffect(() => {
+    if (!suggestion) return;
+    const opts = { shouldValidate: true, shouldDirty: true } as const;
+    setValue("category", suggestion.category, opts);
+    setValue("goalType", suggestion.goalType, opts);
+    setValue("currentAmount", suggestion.currentAmount, opts);
+    setValue("targetAmount", suggestion.targetAmount, opts);
+    setValue("motivation", suggestion.motivation, opts);
+    setValue("triggers", suggestion.triggers, opts);
+    setValue("timeframeDays", suggestion.timeframeDays, opts);
+  }, [suggestion, setValue]);
 
   return (
     <form
@@ -74,6 +95,33 @@ export function OnboardingForm({ onSubmit, isLoading }: OnboardingFormProps) {
           {...register("habitName")}
         />
       </Field>
+
+      <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            Not sure how to fill this out?
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!habitName?.trim() || suggestStatus === "loading"}
+            onClick={() => suggest(habitName)}
+          >
+            {suggestStatus === "loading" ? (
+              <Loader2 className="animate-spin" aria-hidden />
+            ) : (
+              <Wand2 aria-hidden />
+            )}
+            Autofill with AI
+          </Button>
+        </div>
+        {suggestStatus === "error" && (
+          <p className="mt-2 text-sm text-destructive" role="alert">
+            {suggestError ?? "Couldn't generate suggestions. Try again."}
+          </p>
+        )}
+      </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field
