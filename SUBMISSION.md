@@ -8,6 +8,7 @@
 ### Test credentials (for evaluators)
 Email: `demo@rewire.app` · Password: `RewireDemo2026!`
 (Or click **"Use demo account"** on the login screen — one tap, no typing.)
+Google sign-in is also available.
 
 ---
 
@@ -23,18 +24,20 @@ https://rewire-habit-coach.vercel.app
 ---
 
 ### Describe the changes/updates made in the deployed version
-Submission 3 (final). A polished, animated GenAI habit-recovery app — accounts, cloud persistence, adaptive coaching, plus new AI features and a full UI overhaul.
+Submission 3 (final). A polished, animated GenAI habit-recovery app.
 
-New in this version:
-- UI/UX overhaul: motion animations, ambient gradients, glass surfaces, light/dark theme toggle, confetti on wins, responsive micro-interactions.
-- AI form autofill: type your habit and AI prefills the whole onboarding form.
-- Progress visualization: check-in heatmap, current streak, win-rate, timeframe bar.
-- AI relapse reframe: logging a slip returns a compassionate reframe + a get-back-on-track step.
-- Automated tests (Vitest, 34) + lazy-loaded heavy widgets for efficiency.
+Auth: email/password, one-click demo, and Google sign-in (OAuth).
 
-Core (all real LLM, DB-backed, RLS-secured): email/password accounts with one-click demo login, AI recovery plan, adaptive coach chat grounded in your check-ins, Craving SOS, streak tracking.
+Highlights:
+- Tabbed dashboard (Today / My plan / Progress) — each view fits one screen.
+- Premium animated AI-generation experience while your plan is built.
+- AI recovery plan: milestone timeline, trigger-matched coping strategies, replacement behaviors, daily nudge.
+- Adaptive AI coach chat grounded in your real check-in history.
+- Craving SOS, AI relapse reframe on a slip, AI form autofill, streak + heatmap progress.
+- Light/dark themes, motion, confetti on wins, fully responsive.
+- 34 automated tests; Supabase Postgres + Auth + Row-Level Security; all inputs validated client + server.
 
-Validated end-to-end in production. All inputs validated client + server. Deployed on Vercel.
+Every intelligent output is a real LLM call (no mock data). Validated end-to-end in production. Deployed on Vercel.
 
 ### Mention the Gen AI services utilized in the submission, and where did you utilize it?
 Gen AI service: OpenAI (gpt-4o-mini) via the Vercel AI SDK (`ai` + `@ai-sdk/openai`). Structured features use `generateObject` + Zod (guaranteed JSON, no parsing); the coach uses `streamText`. No mock data.
