@@ -15,6 +15,20 @@ Sign in with the demo account (or tap **"Use demo account"** on the login screen
 |---|---|
 | `demo@rewire.app` | `RewireDemo2026!` |
 
+## Screenshots
+
+| Sign in | Onboarding |
+|---|---|
+| ![Sign in](docs/screenshots/01-login.png) | ![Onboarding](docs/screenshots/02-onboarding.png) |
+
+| AI generating your plan | Your recovery plan |
+|---|---|
+| ![AI generation](docs/screenshots/03-generating.png) | ![Recovery plan](docs/screenshots/04-plan.png) |
+
+| Today (nudge · check-in · coach) | Progress |
+|---|---|
+| ![Today](docs/screenshots/05-today.png) | ![Progress](docs/screenshots/06-progress.png) |
+
 ---
 
 ## The problem
