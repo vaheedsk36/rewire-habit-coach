@@ -3,12 +3,19 @@ export * from "./habit";
 export * from "./plan";
 export * from "./sos";
 export * from "./tracking";
+export * from "./coach";
 
 import type { RecoveryPlan } from "./plan";
 import type { SosResponse } from "./sos";
+import type { JourneyRecord } from "./tracking";
 
 /** Typed error codes shared across API routes and the client. */
-export type ErrorCode = "invalid_input" | "ai_failed" | "timeout" | "unknown";
+export type ErrorCode =
+  | "invalid_input"
+  | "unauthorized"
+  | "ai_failed"
+  | "timeout"
+  | "unknown";
 
 export interface ApiError {
   code: ErrorCode;
@@ -22,3 +29,5 @@ export type Result<T> =
 
 export type PlanResult = Result<RecoveryPlan>;
 export type SosResult = Result<SosResponse>;
+export type HabitResult = Result<{ habitId: string }>;
+export type JourneyResult = Result<JourneyRecord>;

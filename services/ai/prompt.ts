@@ -1,5 +1,6 @@
-import type { HabitInput, SosInput } from "@/types";
+import type { HabitInput, JourneyRecord, SosInput } from "@/types";
 import { categoryLabel, triggerLabel } from "@/constants/habits";
+import { currentStreak, daysSince, totalWins } from "@/lib/streak";
 
 /**
  * System prompts define the coach's role and hard rules. Field-level shape rules
@@ -19,6 +20,41 @@ export const SOS_SYSTEM_PROMPT = [
   "Assume the person has seconds of attention — every word must earn its place.",
   "Never shame. Reconnect them to their own reason for change and remind them the urge will pass.",
 ].join(" ");
+
+export const COACH_SYSTEM_PROMPT = [
+  "You are the user's personal habit-change coach inside the Rewire app.",
+  "You ADAPT to their real tracked progress — reference their streak, recent wins/slips, and trigger patterns in the CONTEXT below.",
+  "Be concise (2-4 short paragraphs max), warm, specific, and practical. Talk like a supportive human, not a textbook.",
+  "When they've slipped, respond with compassion and a concrete next step — never shame.",
+  "When they're doing well, name the specific progress you can see in their data.",
+  "You never give medical advice or diagnose; for severe addiction, gently suggest professional support.",
+].join(" ");
+
+/** Compact, factual summary of the user's tracked progress for the coach. */
+export function buildCoachContext(journey: JourneyRecord): string {
+  const { habit, checkIns } = journey;
+  const streak = currentStreak(checkIns);
+  const wins = totalWins(checkIns);
+  const slips = checkIns.filter((c) => c.status === "slip").length;
+  const day = daysSince(journey.startedAt);
+  const recent = checkIns
+    .slice(-7)
+    .map(
+      (c) =>
+        `  ${c.date}: ${c.status}${c.note ? ` — "${c.note}"` : ""}`,
+    )
+    .join("\n");
+
+  return [
+    "CONTEXT — the user's tracked progress (use this, don't ask for it):",
+    `- Habit: ${habit.habitName} (${categoryLabel(habit.category)}), goal: ${habit.goalType}`,
+    `- Their reason: ${habit.motivation}`,
+    `- Known triggers: ${habit.triggers.map(triggerLabel).join(", ")}`,
+    `- Day ${day} of a ${habit.timeframeDays}-day plan`,
+    `- Current streak: ${streak} day(s); total wins: ${wins}; total slips: ${slips}`,
+    recent ? `- Recent check-ins:\n${recent}` : "- No check-ins logged yet.",
+  ].join("\n");
+}
 
 /** Builds the recovery-plan prompt from validated onboarding input. */
 export function buildPlanPrompt(input: HabitInput): string {

@@ -2,7 +2,8 @@
 
 import { useCallback, useState } from "react";
 import type { SosInput, SosResponse, SosResult } from "@/types";
-import type { GenerationStatus } from "./use-plan-generation";
+
+export type GenerationStatus = "idle" | "loading" | "success" | "error";
 
 /** Owns the Craving SOS request lifecycle (loading / success / error / retry). */
 export function useSos() {

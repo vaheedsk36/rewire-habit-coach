@@ -2,11 +2,7 @@ import { z } from "zod";
 import type { HabitInput } from "./habit";
 import type { RecoveryPlan } from "./plan";
 
-/**
- * Client-side tracking types. These persist locally (browser storage) so the
- * app behaves like a real habit tracker without a backend in this iteration.
- * Kept schema-validated so persisted data is always trusted on read.
- */
+/** A single daily check-in. Validated on the API boundary before it hits the DB. */
 export const checkInSchema = z.object({
   /** ISO date, day-granularity: YYYY-MM-DD. */
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -17,12 +13,15 @@ export const checkInSchema = z.object({
 
 export type CheckIn = z.infer<typeof checkInSchema>;
 
-export const journeySchema = z.object({
-  habit: z.custom<HabitInput>(),
-  plan: z.custom<RecoveryPlan>(),
-  startedAt: z.string(),
-  checkIns: z.array(checkInSchema),
-});
-
-/** The full locally-persisted state of a user's journey. */
-export type Journey = z.infer<typeof journeySchema>;
+/**
+ * A user's full journey as loaded from the database (RLS-scoped to them).
+ * Assembled server-side from the `rewire_habits` row (habit + plan) and its
+ * `rewire_check_ins`. Trusted after RLS, so it's a plain type, not a schema.
+ */
+export interface JourneyRecord {
+  habitId: string;
+  habit: HabitInput;
+  plan: RecoveryPlan;
+  startedAt: string;
+  checkIns: CheckIn[];
+}

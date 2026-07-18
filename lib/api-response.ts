@@ -5,6 +5,7 @@ import type { ApiError, ErrorCode, Result } from "@/types";
 /** Map typed error codes to HTTP status codes. Shared by every route. */
 export const STATUS_BY_CODE: Record<ErrorCode, number> = {
   invalid_input: 400,
+  unauthorized: 401,
   ai_failed: 502,
   timeout: 504,
   unknown: 500,
@@ -15,6 +16,19 @@ function errorResponse(error: ApiError) {
     { ok: false, error },
     { status: STATUS_BY_CODE[error.code] },
   );
+}
+
+/** 401 response for unauthenticated requests to protected routes. */
+export function unauthorized(): NextResponse {
+  return errorResponse({
+    code: "unauthorized",
+    message: "Please sign in to continue.",
+  });
+}
+
+/** 500 response for unexpected server/database failures. */
+export function serverError(message = "Something went wrong."): NextResponse {
+  return errorResponse({ code: "unknown", message });
 }
 
 /**

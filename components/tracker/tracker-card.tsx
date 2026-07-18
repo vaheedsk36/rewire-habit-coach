@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Flame, ThumbsDown, Trophy } from "lucide-react";
+import { Check, Flame, Loader2, ThumbsDown, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
-import type { CheckIn, Journey } from "@/types";
+import type { CheckIn, JourneyRecord } from "@/types";
 import { currentStreak, daysSince, todayISO, totalWins } from "@/lib/streak";
 import {
   Card,
@@ -16,29 +16,37 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface TrackerCardProps {
-  journey: Journey;
-  onCheckIn: (checkIn: CheckIn) => void;
+  journey: JourneyRecord;
+  onCheckIn: (checkIn: CheckIn) => Promise<void>;
 }
 
-/** Daily check-in + streak tracking. Local-first: state is persisted by the parent. */
+/** Daily check-in + streak tracking. Writes go through the DB via the parent. */
 export function TrackerCard({ journey, onCheckIn }: TrackerCardProps) {
   const today = todayISO();
   const loggedToday = journey.checkIns.find((c) => c.date === today);
   const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const streak = currentStreak(journey.checkIns);
   const wins = totalWins(journey.checkIns);
   const day = daysSince(journey.startedAt);
 
-  const log = (status: CheckIn["status"]) => {
-    onCheckIn({ date: today, status, note: note.trim() || undefined });
-    setNote("");
-    toast.success(
-      status === "win"
-        ? "Logged a win. Keep the streak alive 🔥"
-        : "Logged — a slip isn't the end. Tomorrow's a fresh day.",
-    );
-  };
+  async function log(status: CheckIn["status"]) {
+    setSubmitting(true);
+    try {
+      await onCheckIn({ date: today, status, note: note.trim() || undefined });
+      setNote("");
+      toast.success(
+        status === "win"
+          ? "Logged a win. Keep the streak alive 🔥"
+          : "Logged — a slip isn't the end. Tomorrow's a fresh day.",
+      );
+    } catch {
+      toast.error("Couldn't save your check-in. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <Card>
@@ -78,13 +86,22 @@ export function TrackerCard({ journey, onCheckIn }: TrackerCardProps) {
               className="w-full resize-none rounded-lg border bg-transparent p-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             />
             <div className="flex gap-2">
-              <Button className="flex-1" onClick={() => log("win")}>
-                <Check aria-hidden />
+              <Button
+                className="flex-1"
+                disabled={submitting}
+                onClick={() => log("win")}
+              >
+                {submitting ? (
+                  <Loader2 className="animate-spin" aria-hidden />
+                ) : (
+                  <Check aria-hidden />
+                )}
                 Stayed on track
               </Button>
               <Button
                 variant="outline"
                 className="flex-1"
+                disabled={submitting}
                 onClick={() => log("slip")}
               >
                 <ThumbsDown aria-hidden />
