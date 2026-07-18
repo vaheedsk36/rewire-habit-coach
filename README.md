@@ -5,6 +5,16 @@
 > Built for the PromptWars Main Challenge: **Breaking Bad Habits & Addiction**.
 > See `CLAUDE.md` for build conventions, `PLAN.md` for the build order.
 
+## 🚀 Live demo
+
+**https://rewire-habit-coach.vercel.app**
+
+Sign in with the demo account (or tap **"Use demo account"** on the login screen):
+
+| Email | Password |
+|---|---|
+| `demo@rewire.app` | `RewireDemo2026!` |
+
 ---
 
 ## The problem
@@ -13,21 +23,22 @@ Breaking a habit isn't an information problem — everyone knows screen time is 
 
 ## How Rewire uses Generative AI (the core, not a bolt-on)
 
-Every intelligent output is produced by a **real LLM** through the Vercel AI SDK's `generateObject` with Zod schemas, so the UI always receives valid, fully-typed structured data — no text parsing, no mock responses.
+Every intelligent output is produced by a **real LLM** through the Vercel AI SDK — `generateObject` + Zod schemas for structured features (valid, fully-typed data, no text parsing) and `streamText` for the coach. No mock or hardcoded responses anywhere.
 
-- **Personalized recovery plan** — from your habit, motivation, baseline, and triggers, the AI generates a staged quit-or-reduce plan: milestones, coping strategies, and replacement behaviors tailored to *your* habit.
-- **Intelligent nudges** — the AI reads your check-in history and surfaces contextual nudges ("you tend to slip on Friday evenings — here's a plan for tonight") instead of generic reminders.
-- **Craving SOS** — one tap during an urge returns an instant, structured coping response: grounding steps, a distraction, and a reframe of *why you started*.
-- **Adaptive coach (chat)** — a streaming AI coach grounded in your real tracking data — it knows your streak, your triggers, and your last slip, and coaches accordingly.
-- **Weekly reflection** — the AI analyzes the week's data and produces an honest, encouraging summary with one focused goal for the week ahead.
+- **Personalized recovery plan** — from your habit, motivation, current amount, and triggers, the AI generates a staged quit-or-reduce plan: milestones, trigger-specific coping strategies, replacement behaviors, a daily nudge, and an affirmation tailored to *your* habit.
+- **Intelligent nudge** — the plan includes a daily nudge tuned to your habit and triggers; the adaptive coach (below) then reacts to your live check-in history.
+- **Craving SOS** — one tap during an urge returns an instant, structured coping response: grounding steps, a distraction, a reframe of *why you started*, and how long the urge should last.
+- **Adaptive coach (chat)** — a streaming AI coach grounded server-side in your real tracked progress — it knows your current streak, wins/slips, and trigger patterns, and coaches accordingly, so its guidance changes as you do.
+
+> **Roadmap (Submission 3):** weekly AI reflection over your data, a dedicated relapse-recovery reframe flow, and milestone-celebration UI.
 
 ## Features
 
-- **Habit-agnostic onboarding** — define any habit (with excessive screen time as the flagship example): whether to *quit* or *reduce*, your target, your baseline, your "why", and your known triggers.
-- **Daily check-ins** — log status (win / slip / relapse), screen-time minutes or count, mood, trigger, and a note. Fast, low-friction, one screen.
-- **Streaks & trends** — real streak tracking, relapse-aware, with progress trends over time (not just a naive counter).
-- **Relapse recovery, not shame** — a slip triggers a supportive AI reframe and a get-back-on-track step, because shame drives relapse.
-- **Milestones** — celebrate meaningful progress markers the plan defines.
+- **Accounts** — email/password auth (Supabase) with a one-click **"Use demo account"** button, so your journey persists across sessions and devices.
+- **Habit-agnostic onboarding** — define any habit (with excessive screen time as the flagship example): whether to *quit* or *reduce*, your current amount, your target, your "why", your known triggers, and a timeframe.
+- **Daily check-ins** — log status (win / slip) with an optional note. Fast, low-friction, one screen. Stored per-user in Postgres.
+- **Streaks & wins** — a relapse-aware current streak and total-wins counter, derived from your check-in history.
+- **Supportive by default** — a slip is met with encouragement, not shame, because shame drives relapse.
 - **Consumer-grade UX** — "ChatGPT meets Notion": cards, progress indicators, skeleton loaders, empty states, and a full request lifecycle (loading, success, failure, retry, timeout).
 
 ## Tech stack
@@ -67,14 +78,12 @@ Full conventions and rationale live in `CLAUDE.md`.
 
 ## Data model (Supabase)
 
-Per-user, protected by Row-Level Security:
+Per-user, protected by Row-Level Security (`TO authenticated` + an `auth.uid() = user_id` ownership predicate on every policy). Tables are namespaced `rewire_*`:
 
-- **`profiles`** — one row per user.
-- **`habits`** — the habit(s) being changed: type, quit-or-reduce, target, baseline, motivation, triggers, start date.
-- **`check_ins`** — daily logs: date, status (win/slip/relapse), amount (e.g. screen-time minutes), mood, trigger, note.
-- **`plans`** — the AI-generated recovery plan: milestones, coping strategies, replacement behaviors.
+- **`rewire_habits`** — the habit being changed (name, category, quit-or-reduce, current amount, target, motivation, triggers, timeframe) plus the AI-generated `plan` stored as JSONB.
+- **`rewire_check_ins`** — daily logs: date, status (win/slip), optional mood and note. One row per habit per day.
 
-Streaks, trends, and milestone progress are derived from `check_ins` — never stored redundantly.
+Streaks and total wins are **derived** from `rewire_check_ins` at read time — never stored redundantly.
 
 ## Getting started
 
@@ -109,13 +118,12 @@ Copy `.env.example` to `.env.local` and set:
 
 | Variable | Required | Description |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL (public). |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anon/publishable key (public, RLS-protected). |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Service-role key. **Server-only** — never exposed to the client. |
 | `OPENAI_API_KEY` | ✅ | LLM API key. **Server-only** — used exclusively inside `services/ai`. |
-| `OPENAI_MODEL` | optional | Model id override. |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL (public). |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anon/publishable key (public — RLS enforces per-user access). |
+| `OPENAI_MODEL` | optional | Model id override (defaults to `gpt-4o-mini`). |
 
-> The LLM and service-role keys are used exclusively on the server. They are never sent to the browser and never committed — `.env.local` is git-ignored.
+> The LLM key is used exclusively on the server, never sent to the browser, and never committed — `.env.local` is git-ignored. No service-role key is needed: the app talks to Supabase as the signed-in user, and RLS does the rest.
 
 ## Security
 
@@ -133,6 +141,6 @@ Copy `.env.example` to `.env.local` and set:
 
 ## Notes
 
-- **No mock data.** Every plan, nudge, SOS response, and reflection is generated by a real LLM request — there are no hardcoded or placeholder AI responses anywhere in the app.
+- **No mock data.** Every plan, nudge, SOS response, and coach reply is generated by a real LLM request — there are no hardcoded or placeholder AI responses anywhere in the app.
 - **Structured output is enforced by Zod**, so the UI always receives valid, fully-typed data.
 - **Supportive by design.** Rewire reframes slips instead of shaming them, because shame drives relapse — the coaching tone is a product decision, not an accident.

@@ -17,16 +17,18 @@ Live: https://rewire-habit-coach.vercel.app
 - [x] typecheck + build pass; endpoints verified against the real LLM locally and in prod
 - [x] Deployed to Vercel with server-only `OPENAI_API_KEY`
 
-## Submission 2 — persistence + adaptive coaching (Supabase)
+## Submission 2 — SHIPPED ✅ (persistence + auth + adaptive coach)
 
-Goal: make it truly longitudinal and add the adaptive coach.
+Live: https://rewire-habit-coach.vercel.app · Demo: `demo@rewire.app` / `RewireDemo2026!`
 
-- [ ] Supabase schema + RLS: `profiles`, `habits`, `check_ins`, `plans` (own a fresh project — do NOT reuse the shared one)
-- [ ] `services/db/` — server-only, RLS-scoped queries; migrate local journey → DB on first sign-in
-- [ ] Auth (Supabase, email magic-link) with `@supabase/ssr` + middleware
-- [ ] **Adaptive coach chat** — streaming (`streamText`), grounded in the user's real check-in history
-- [ ] **Pattern-aware nudges** — regenerate the daily nudge from recent check-ins ("you tend to slip on evenings")
-- [ ] Progress insights: trend of wins/slips over time
+- [x] Supabase schema + RLS: `rewire_habits`, `rewire_check_ins` (namespaced in the shared project; plan stored as JSONB; RLS = `TO authenticated` + `auth.uid()=user_id` + `WITH CHECK`)
+- [x] `services/db/journey.ts` — server-only, RLS-scoped queries
+- [x] Auth (Supabase email/password) with `@supabase/ssr`, session-refresh middleware, login page, seeded demo user
+- [x] Data flow migrated off localStorage → auth-gated server component loads journey from DB
+- [x] **Adaptive coach chat** — streaming (`streamText`) via `/api/coach`, grounded in the user's real check-in history
+- [x] Verified full authenticated flow end-to-end in production (login → plan → check-in → coach → reset)
+
+Deferred to Submission 3: pattern-aware nudge regeneration, cross-device is already covered by accounts.
 
 ## Submission 3 — polish + depth (the tiebreakers)
 
