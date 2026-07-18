@@ -39,7 +39,14 @@ Prior eval: Testing 0, Efficiency 80 were the gaps (everything else 88–100).
 - [x] **Code quality** — removed dead code (unused `JourneyResult`), tightened types.
 - [x] Re-verified full authenticated flow in production; redeployed.
 
-Not pursued (out of scope / lower ROI this round): weekly AI reflection, dedicated relapse-recovery flow, milestone-celebration UI, deeper a11y pass.
+Then expanded (same final submission), built with parallel subagents:
+- [x] **UI/UX overhaul** — motion animations, ambient gradients, glass, light/dark theme toggle (next-themes), confetti on wins, hover micro-interactions, reduced-motion respected.
+- [x] **AI form autofill** — `/api/suggest` prefills onboarding from the habit name.
+- [x] **Progress visualization** — check-in heatmap + streak/win-rate + timeframe bar.
+- [x] **AI relapse reframe** — `/api/reframe` turns a logged slip into a compassionate recovery moment.
+- [x] Re-verified ALL flows (incl. suggest + reframe) end-to-end in production.
+
+Not pursued (roadmap): weekly AI reflection, trigger analytics, reminders/notifications.
 
 ## Guardrails (all submissions)
 

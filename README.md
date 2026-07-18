@@ -26,28 +26,31 @@ Breaking a habit isn't an information problem — everyone knows screen time is 
 Every intelligent output is produced by a **real LLM** through the Vercel AI SDK — `generateObject` + Zod schemas for structured features (valid, fully-typed data, no text parsing) and `streamText` for the coach. No mock or hardcoded responses anywhere.
 
 - **Personalized recovery plan** — from your habit, motivation, current amount, and triggers, the AI generates a staged quit-or-reduce plan: milestones, trigger-specific coping strategies, replacement behaviors, a daily nudge, and an affirmation tailored to *your* habit.
-- **Intelligent nudge** — the plan includes a daily nudge tuned to your habit and triggers; the adaptive coach (below) then reacts to your live check-in history.
+- **Adaptive coach (chat)** — a streaming AI coach grounded server-side in your real tracked progress — it knows your current streak, wins/slips, and trigger patterns, so its guidance changes as you do.
 - **Craving SOS** — one tap during an urge returns an instant, structured coping response: grounding steps, a distraction, a reframe of *why you started*, and how long the urge should last.
-- **Adaptive coach (chat)** — a streaming AI coach grounded server-side in your real tracked progress — it knows your current streak, wins/slips, and trigger patterns, and coaches accordingly, so its guidance changes as you do.
+- **AI form autofill** — type the habit you want to change and the AI prefills the entire onboarding form (category, goal, likely triggers, an example motivation, a sensible timeframe) — all editable.
+- **AI relapse reframe** — logging a slip returns a compassionate reframe + one get-back-on-track step, turning a slip into a recovery moment instead of a failure.
 
-> **Roadmap (Submission 3):** weekly AI reflection over your data, a dedicated relapse-recovery reframe flow, and milestone-celebration UI.
+> **Roadmap:** weekly AI reflection over your data, richer trigger analytics, reminders/notifications.
 
 ## Features
 
 - **Accounts** — email/password auth (Supabase) with a one-click **"Use demo account"** button, so your journey persists across sessions and devices.
 - **Habit-agnostic onboarding** — define any habit (with excessive screen time as the flagship example): whether to *quit* or *reduce*, your current amount, your target, your "why", your known triggers, and a timeframe.
 - **Daily check-ins** — log status (win / slip) with an optional note. Fast, low-friction, one screen. Stored per-user in Postgres.
-- **Streaks & wins** — a relapse-aware current streak and total-wins counter, derived from your check-in history.
-- **Supportive by default** — a slip is met with encouragement, not shame, because shame drives relapse.
-- **Consumer-grade UX** — "ChatGPT meets Notion": cards, progress indicators, skeleton loaders, empty states, and a full request lifecycle (loading, success, failure, retry, timeout).
+- **Progress visualization** — a check-in heatmap, current streak, win-rate, and a timeframe progress bar, all derived from your check-in history.
+- **Supportive by default** — a slip is met with an AI reframe and encouragement, not shame, because shame drives relapse.
+- **Polished, animated UX** — "ChatGPT meets Notion": motion transitions, ambient gradients, glass surfaces, a light/dark theme toggle, confetti on wins, skeleton loaders, empty states, and a full request lifecycle (loading, success, failure, retry, timeout). Reduced-motion respected.
 
 ## Tech stack
 
 - **Next.js 15** (App Router) + **TypeScript** (strict)
 - **TailwindCSS** + **shadcn/ui**
 - **React Hook Form** + **Zod** — one schema validates the form *and* the AI output
-- **Vercel AI SDK** — `generateObject` for structured outputs + streaming for the coach chat, backed by a **real LLM**
+- **Vercel AI SDK** — `generateObject` for structured outputs + `streamText` for the coach chat, backed by a **real LLM**
 - **Supabase** — Postgres + Auth + Row-Level Security for per-user data
+- **motion** (animations), **next-themes** (light/dark), **canvas-confetti** (celebrations)
+- **Vitest** — unit tests for pure logic (streak, prompts, schemas, error mapping)
 - Deployed on **Vercel**
 
 ## Architecture

@@ -23,27 +23,27 @@ https://rewire-habit-coach.vercel.app
 ---
 
 ### Describe the changes/updates made in the deployed version
-Submission 3 (final). Full GenAI habit-recovery app with accounts, cloud persistence, and an adaptive AI coach — plus this round's quality hardening.
+Submission 3 (final). A polished, animated GenAI habit-recovery app — accounts, cloud persistence, adaptive coaching, plus new AI features and a full UI overhaul.
 
 New in this version:
-- Automated test suite (Vitest, 34 tests) covering streak logic, prompt builders, Zod validation, and error mapping.
-- Efficiency: heavy client widgets (Craving SOS, coach chat) are code-split and lazy-loaded to shrink the initial bundle.
-- Code-quality cleanup: removed dead code, tightened types.
+- UI/UX overhaul: motion animations, ambient gradients, glass surfaces, light/dark theme toggle, confetti on wins, responsive micro-interactions.
+- AI form autofill: type your habit and AI prefills the whole onboarding form.
+- Progress visualization: check-in heatmap, current streak, win-rate, timeframe bar.
+- AI relapse reframe: logging a slip returns a compassionate reframe + a get-back-on-track step.
+- Automated tests (Vitest, 34) + lazy-loaded heavy widgets for efficiency.
 
-Core features (all real LLM, DB-backed, secured with row-level security):
-- Email/password accounts with a one-click "Use demo account" button.
-- AI recovery plan: milestones, trigger-specific coping strategies, replacement behaviors, daily nudge, affirmation.
-- Adaptive coach chat grounded in your real check-in history (streak, wins/slips, triggers).
-- Craving SOS for in-the-moment urges; streak tracking + daily check-ins.
+Core (all real LLM, DB-backed, RLS-secured): email/password accounts with one-click demo login, AI recovery plan, adaptive coach chat grounded in your check-ins, Craving SOS, streak tracking.
 
 Validated end-to-end in production. All inputs validated client + server. Deployed on Vercel.
 
 ### Mention the Gen AI services utilized in the submission, and where did you utilize it?
-Gen AI service: OpenAI (gpt-4o-mini) via the Vercel AI SDK (`ai` + `@ai-sdk/openai`). Structured features use `generateObject` with Zod schemas (guaranteed JSON, no parsing); the coach uses `streamText` for a live token stream.
+Gen AI service: OpenAI (gpt-4o-mini) via the Vercel AI SDK (`ai` + `@ai-sdk/openai`). Structured features use `generateObject` + Zod (guaranteed JSON, no parsing); the coach uses `streamText`. No mock data.
 
 Where it's used (all server-side, in services/ai):
-1. Recovery plan — POST /api/habit → generatePlan(): builds a personalized plan (milestones, trigger-specific coping strategies, replacement behaviors, daily nudge, affirmation).
-2. Craving SOS — POST /api/sos → generateSos(): real-time coping steps, a distraction, a reframe, and expected duration during an urge.
-3. Adaptive coach — POST /api/coach → streamCoachReply(): a streaming chat grounded in the user's real check-in history (streak, wins/slips, triggers), loaded from the DB under RLS.
+1. Recovery plan — /api/habit → generatePlan(): milestones, trigger-specific coping strategies, replacement behaviors, daily nudge, affirmation.
+2. Adaptive coach — /api/coach → streamCoachReply(): streaming chat grounded in the user's real check-in history (RLS-scoped).
+3. Craving SOS — /api/sos → generateSos(): in-the-moment coping steps, distraction, reframe, duration.
+4. Form autofill — /api/suggest → generateSuggestion(): infers onboarding values from the habit name.
+5. Relapse reframe — /api/reframe → generateReframe(): compassionate reframe + next step after a slip.
 
-The API key is server-only; output shape is enforced by Zod schemas in types/.
+API key is server-only; output shapes enforced by Zod schemas in types/.
