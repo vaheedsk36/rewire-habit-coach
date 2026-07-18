@@ -1,0 +1,14 @@
+# <type>(<scope>): <subject>   -> imperative, lower-case, <=72 chars, no period
+#
+# <body>   -> the WHY, wrapped ~72 chars (optional)
+#
+# <footer> -> BREAKING CHANGE: ... | Closes #123 (optional)
+#
+# ---- Conventional Commits — see COMMIT_CONVENTION.md ----
+# types:  feat fix refactor style perf test docs build ci chore revert
+# scopes: ui form api ai types hooks results config deploy docs
+#
+# examples:
+#   feat(ai): add generate-plan service using OpenAI generateObject
+#   fix(api): return 504 on LLM request timeout
+#   docs(readme): document required environment variables
