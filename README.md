@@ -77,7 +77,7 @@ types/          Zod schemas + inferred types (single source of truth)
 constants/      Habit types, trigger options, config
 ```
 
-Full conventions and rationale live in `CLAUDE.md`.
+See **`ARCHITECTURE.md`** for the full layered architecture, per-feature request flows, the auth/session model, and diagrams. Conventions and rationale live in `CLAUDE.md`.
 
 ## Data model (Supabase)
 
