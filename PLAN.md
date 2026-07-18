@@ -30,14 +30,16 @@ Live: https://rewire-habit-coach.vercel.app · Demo: `demo@rewire.app` / `Rewire
 
 Deferred to Submission 3: pattern-aware nudge regeneration, cross-device is already covered by accounts.
 
-## Submission 3 — polish + depth (the tiebreakers)
+## Submission 3 — SHIPPED ✅ (quality hardening — target the weak scores)
 
-- [ ] **Weekly reflection** — AI summarizes the week's data + sets one focused goal
-- [ ] Relapse-recovery flow: a slip triggers a supportive AI reframe + get-back-on-track step
-- [ ] Milestone celebration UI tied to streak/day progress
-- [ ] Unit tests for pure logic (`lib/streak.ts`, prompt builders)
-- [ ] Accessibility pass (focus trap in SOS overlay, keyboard nav, ARIA), reduced-motion
-- [ ] Efficiency pass: Server Components where possible, dynamic import the SOS overlay
+Prior eval: Testing 0, Efficiency 80 were the gaps (everything else 88–100).
+
+- [x] **Testing 0 → covered** — Vitest suite, 34 tests: `lib/streak`, prompt builders, all Zod schemas, `toAiError`. `pnpm test`.
+- [x] **Efficiency** — code-split + lazy-load the heavy client widgets (Craving SOS overlay, coach chat) via `next/dynamic`.
+- [x] **Code quality** — removed dead code (unused `JourneyResult`), tightened types.
+- [x] Re-verified full authenticated flow in production; redeployed.
+
+Not pursued (out of scope / lower ROI this round): weekly AI reflection, dedicated relapse-recovery flow, milestone-celebration UI, deeper a11y pass.
 
 ## Guardrails (all submissions)
 
