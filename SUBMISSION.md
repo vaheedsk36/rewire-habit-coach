@@ -7,8 +7,7 @@
 
 ### Test credentials (for evaluators)
 Email: `demo@rewire.app` · Password: `RewireDemo2026!`
-(Or click **"Use demo account"** on the login screen — one tap, no typing.)
-Google sign-in is also available.
+Enter these on the login screen to sign in. Google sign-in is also available.
 
 ---
 

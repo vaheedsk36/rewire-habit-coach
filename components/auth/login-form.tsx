@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/card";
 import { Field } from "@/components/shared/field";
 
-const DEMO = { email: "demo@rewire.app", password: "RewireDemo2026!" };
-
 // Gated so we never render a Google button until the provider is actually
 // enabled in Supabase (otherwise clicking it would error). Flip the env flag
 // once the Google provider is configured.
@@ -264,14 +262,13 @@ export function LoginForm() {
           </motion.div>
         </form>
 
-        <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          or
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <div className="space-y-2">
-          {GOOGLE_ENABLED && (
+        {GOOGLE_ENABLED && (
+          <>
+            <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              or
+              <span className="h-px flex-1 bg-border" />
+            </div>
             <Button
               variant="outline"
               className="h-11 w-full"
@@ -281,22 +278,8 @@ export function LoginForm() {
               <GoogleIcon />
               Continue with Google
             </Button>
-          )}
-
-          <Button
-            variant="outline"
-            className="h-11 w-full"
-            disabled={loading}
-            onClick={() => {
-              setMode("sign_in");
-              setEmail(DEMO.email);
-              setPassword(DEMO.password);
-              void authenticate(DEMO);
-            }}
-          >
-            Use demo account
-          </Button>
-        </div>
+          </>
+        )}
 
         <button
           type="button"
