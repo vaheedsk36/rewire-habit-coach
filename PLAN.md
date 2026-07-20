@@ -54,3 +54,32 @@ Not pursued (roadmap): weekly AI reflection, trigger analytics, reminders/notifi
 - API key stays server-only; `.env.local` git-ignored; `.env.example` current.
 - One Zod schema per contract, reused across form + API + AI + UI.
 - `pnpm typecheck` + `pnpm build` must pass before any "done".
+
+---
+
+# Productization roadmap (post-hackathon)
+
+Turning Rewire from a submission into a real product. Positioning: **free personal tool**.
+
+## Phase 1 — Public site + restructure — SHIPPED ✅
+- [x] Move the app under `/app`; make `/` (landing) and `/about` public + SEO-indexable
+- [x] Middleware gates only `/app/*`; post-login → `/app`, sign-out → `/`
+- [x] Marketing chrome (shared header + footer), landing page (hero, problem, 4 pillars, screenshots, FAQ, CTA), about page (mission, AI, values, story)
+- [x] SEO metadata + generated OpenGraph image + favicon/brand
+
+## Phase 2 — Product depth (next)
+- [ ] **Multiple habits** per user (today: one active) — switch/archive
+- [ ] **Weekly AI reflection** over the week's data + one focused goal
+- [ ] **Trigger analytics** — which triggers cause slips
+- [ ] **Milestone celebrations** tied to streak/day progress
+- [ ] **Reminders** (email or web push) + a **Settings/Profile** page
+
+## Phase 3 — Infra & quality
+- [ ] Dedicated Supabase project (off the shared one) + migrations in repo + RLS audit
+- [ ] Auth hardening (email confirmation via SMTP; Google fully wired end-to-end)
+- [ ] CI (lint/typecheck/test/build) + Playwright e2e; error monitoring; rate limiting; analytics
+- [ ] Provider-switchable LLM (Gemini/OpenAI) — stashed WIP; needs a standard AI Studio key
+- [ ] Accessibility + performance audits
+
+## Phase 4 — Growth
+- [ ] Blog/content + SEO, PWA/installable, optional waitlist

@@ -37,8 +37,13 @@ boundary, the AI output, and the UI props — so types never drift.
 
 ```
 app/                     Routes, layouts, API route handlers (thin)
-  layout.tsx               Root layout: fonts, ThemeProvider, Toaster
-  page.tsx                 Home — auth-gated Server Component; loads journey, renders Onboarding | Dashboard
+  layout.tsx               Root layout: fonts, ThemeProvider, Toaster, SEO metadata
+  opengraph-image.tsx      Generated social-preview image
+  (marketing)/             PUBLIC marketing site (shared nav + footer layout)
+    layout.tsx               SiteHeader + SiteFooter chrome
+    page.tsx                 Landing page (/)
+    about/page.tsx           About page (/about)
+  app/page.tsx             PRODUCT home (/app) — auth-gated; Onboarding | Dashboard
   login/page.tsx           Login screen
   auth/callback/route.ts   OAuth code → session exchange
   api/
@@ -129,7 +134,7 @@ Auth is Supabase, wired with `@supabase/ssr`:
 
 - **`lib/supabase/client.ts`** — browser client (Client Components) using the public anon key.
 - **`lib/supabase/server.ts`** — server client (Server Components, Route Handlers) reading/writing the session via Next's cookie store.
-- **`lib/supabase/middleware.ts`** + **`middleware.ts`** — refresh the session on every request and **gate protected routes** (unauthenticated → `/login`; `/login` and `/auth` are public; `/api/*` do their own `getUser()` check).
+- **`lib/supabase/middleware.ts`** + **`middleware.ts`** — refresh the session on every request and **gate the product** (`/app/*` → `/login` if signed out). The marketing site (`/`, `/about`), `/login`, and `/auth` are public and SEO-indexable; `/api/*` do their own `getUser()` check.
 
 ```mermaid
 flowchart TD

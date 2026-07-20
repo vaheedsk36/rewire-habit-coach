@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-/** Public routes reachable without a session. */
-const PUBLIC_PATHS = ["/login", "/auth"];
+/** Only the product lives behind auth; everything else (landing, about, login) is public. */
+const PROTECTED_PREFIX = "/app";
 
 /**
  * Refreshes the auth session on every request (so tokens don't expire mid-use)
@@ -41,17 +41,18 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
-  if (!user && !isPublic) {
+  // Gate the product; send signed-out visitors to login.
+  if (!user && pathname.startsWith(PROTECTED_PREFIX)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
+  // Signed-in users don't need the login screen — take them to the app.
   if (user && pathname === "/login") {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/app";
     return NextResponse.redirect(url);
   }
 
