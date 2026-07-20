@@ -61,6 +61,7 @@ function passwordChecks(pw: string) {
 export function LoginForm() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("sign_in");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -79,7 +80,10 @@ export function LoginForm() {
     const supabase = createClient();
 
     if (mode === "sign_up") {
-      const { data, error } = await supabase.auth.signUp(creds);
+      const { data, error } = await supabase.auth.signUp({
+        ...creds,
+        options: { data: { full_name: name.trim() } },
+      });
       if (error) {
         setError(error.message);
         setLoading(false);
@@ -155,6 +159,19 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={onSubmit} noValidate>
+          {mode === "sign_up" && (
+            <Field label="Your name" htmlFor="name">
+              <Input
+                id="name"
+                type="text"
+                autoComplete="name"
+                className="h-11"
+                placeholder="Alex"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Field>
+          )}
           <Field label="Email" htmlFor="email">
             <Input
               id="email"

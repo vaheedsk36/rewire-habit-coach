@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { habitInputSchema } from "@/types/habit";
 import type { HabitResult } from "@/types";
 import { generatePlan } from "@/services/ai/generate-plan";
-import { createHabit, deleteJourney } from "@/services/db/journey";
+import { createHabit, deleteHabit } from "@/services/db/journey";
+import { sendPlanReadyEmail } from "@/services/email/welcome";
 import { createClient } from "@/lib/supabase/server";
 import {
   parseBody,
@@ -15,6 +16,7 @@ import {
  * POST /api/habit
  * Auth-gated. Validate onboarding input → generate the plan with a real LLM →
  * persist the habit + plan (RLS-scoped to the user) → return the new habit id.
+ * Fires a "plan ready" email fire-and-forget so it never blocks or breaks the response.
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -31,24 +33,34 @@ export async function POST(request: Request) {
 
   try {
     const habitId = await createHabit(supabase, user.id, parsed.data, plan.data);
+    if (user.email) {
+      void sendPlanReadyEmail({
+        to: user.email,
+        habitName: parsed.data.habitName,
+        plan: plan.data,
+      }).catch(() => {});
+    }
     return NextResponse.json<HabitResult>({ ok: true, data: { habitId } });
   } catch {
     return serverError("We generated your plan but couldn't save it. Try again.");
   }
 }
 
-/** DELETE /api/habit — clear the user's journey so they can start a new habit. */
-export async function DELETE() {
+/** DELETE /api/habit?habitId=<id> — remove one habit (check-ins cascade). */
+export async function DELETE(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return unauthorized();
 
+  const habitId = new URL(request.url).searchParams.get("habitId");
+  if (!habitId) return serverError("Missing habitId.");
+
   try {
-    await deleteJourney(supabase, user.id);
+    await deleteHabit(supabase, user.id, habitId);
     return NextResponse.json({ ok: true, data: {} });
   } catch {
-    return serverError("Couldn't reset your journey. Try again.");
+    return serverError("Couldn't delete that habit. Try again.");
   }
 }

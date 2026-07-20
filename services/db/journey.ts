@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   CheckIn,
   HabitInput,
+  HabitSummary,
   JourneyRecord,
   RecoveryPlan,
 } from "@/types";
@@ -55,6 +56,70 @@ function toCheckIn(row: CheckInRow): CheckIn {
   };
 }
 
+/** Assemble a full JourneyRecord for a habit row by loading its check-ins. */
+async function buildJourney(
+  supabase: SupabaseClient,
+  habit: HabitRow,
+): Promise<JourneyRecord> {
+  const { data: checkIns, error } = await supabase
+    .from("rewire_check_ins")
+    .select("date,status,mood,note")
+    .eq("habit_id", habit.id)
+    .order("date", { ascending: true })
+    .returns<CheckInRow[]>();
+
+  if (error) throw error;
+
+  return {
+    habitId: habit.id,
+    habit: toHabitInput(habit),
+    plan: habit.plan,
+    startedAt: habit.created_at,
+    checkIns: (checkIns ?? []).map(toCheckIn),
+  };
+}
+
+/** All of the user's habits (newest first) — lightweight, for the switcher. */
+export async function getHabits(
+  supabase: SupabaseClient,
+): Promise<HabitSummary[]> {
+  const { data, error } = await supabase
+    .from("rewire_habits")
+    .select("id,habit_name,category,goal_type,created_at")
+    .order("created_at", { ascending: false })
+    .returns<
+      Pick<
+        HabitRow,
+        "id" | "habit_name" | "category" | "goal_type" | "created_at"
+      >[]
+    >();
+
+  if (error) throw error;
+  return (data ?? []).map((h) => ({
+    id: h.id,
+    habitName: h.habit_name,
+    category: h.category,
+    goalType: h.goal_type,
+    startedAt: h.created_at,
+  }));
+}
+
+/** Load a specific habit's journey, or null if it isn't the user's / doesn't exist. */
+export async function getJourney(
+  supabase: SupabaseClient,
+  habitId: string,
+): Promise<JourneyRecord | null> {
+  const { data: habit, error } = await supabase
+    .from("rewire_habits")
+    .select("*")
+    .eq("id", habitId)
+    .maybeSingle<HabitRow>();
+
+  if (error) throw error;
+  if (!habit) return null;
+  return buildJourney(supabase, habit);
+}
+
 /** Load the user's most recent habit and its check-ins, or null if none. */
 export async function getActiveJourney(
   supabase: SupabaseClient,
@@ -68,23 +133,7 @@ export async function getActiveJourney(
 
   if (error) throw error;
   if (!habit) return null;
-
-  const { data: checkIns, error: ciError } = await supabase
-    .from("rewire_check_ins")
-    .select("date,status,mood,note")
-    .eq("habit_id", habit.id)
-    .order("date", { ascending: true })
-    .returns<CheckInRow[]>();
-
-  if (ciError) throw ciError;
-
-  return {
-    habitId: habit.id,
-    habit: toHabitInput(habit),
-    plan: habit.plan,
-    startedAt: habit.created_at,
-    checkIns: (checkIns ?? []).map(toCheckIn),
-  };
+  return buildJourney(supabase, habit);
 }
 
 /** Persist a new habit + its generated plan; returns the new habit id. */
@@ -137,15 +186,17 @@ export async function upsertCheckIn(
   if (error) throw error;
 }
 
-/** Delete all of the user's habits (check-ins cascade) so they can start over. */
-export async function deleteJourney(
+/** Delete a single habit (its check-ins cascade). RLS + user_id scope it. */
+export async function deleteHabit(
   supabase: SupabaseClient,
   userId: string,
+  habitId: string,
 ): Promise<void> {
   const { error } = await supabase
     .from("rewire_habits")
     .delete()
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .eq("id", habitId);
 
   if (error) throw error;
 }

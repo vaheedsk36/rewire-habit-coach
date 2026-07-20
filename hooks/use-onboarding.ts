@@ -32,6 +32,7 @@ export function useOnboarding() {
         const result = (await res.json()) as HabitResult;
 
         if (result.ok) {
+          router.push("/app");
           router.refresh();
         } else {
           setError(result.error.message);

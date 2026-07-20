@@ -2,17 +2,19 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   Bell,
   CalendarDays,
   ListChecks,
-  RotateCcw,
+  Plus,
+  Trash2,
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import type { CheckIn, JourneyRecord } from "@/types";
+import type { CheckIn, HabitSummary, JourneyRecord } from "@/types";
 import { categoryLabel, HABIT_CATEGORIES } from "@/constants/habits";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import { FadeIn } from "@/components/motion/motion";
 import { PlanView } from "@/components/plan/plan-view";
 import { TrackerCard } from "@/components/tracker/tracker-card";
 import { ProgressPanel } from "@/components/progress/progress-panel";
+import { BadgesCard } from "@/components/progress/badges-card";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
@@ -36,6 +39,8 @@ const CoachChat = dynamic(
 
 interface DashboardProps {
   journey: JourneyRecord;
+  habits: HabitSummary[];
+  name: string;
 }
 
 type Tab = "today" | "plan" | "progress";
@@ -46,17 +51,17 @@ const TABS: { id: Tab; label: string; icon: typeof Bell }[] = [
   { id: "progress", label: "Progress", icon: TrendingUp },
 ];
 
-/** Tabbed home so each view fits a screen instead of one long scroll. */
-export function Dashboard({ journey }: DashboardProps) {
+const emojiFor = (category: string) =>
+  HABIT_CATEGORIES.find((c) => c.value === category)?.emoji ?? "🎯";
+
+/** Tabbed home with a habit switcher — track and switch between multiple habits. */
+export function Dashboard({ journey, habits, name }: DashboardProps) {
   const router = useRouter();
   const { habit, plan, habitId } = journey;
-  // Just onboarded (no check-ins yet)? Open on the plan — it's what they just
-  // built. Returning users who've started tracking land on Today.
   const [tab, setTab] = useState<Tab>(
     journey.checkIns.length === 0 ? "plan" : "today",
   );
-  const emoji =
-    HABIT_CATEGORIES.find((c) => c.value === habit.category)?.emoji ?? "🎯";
+  const [deleting, setDeleting] = useState(false);
 
   const handleCheckIn = useCallback(
     async (checkIn: CheckIn) => {
@@ -71,18 +76,81 @@ export function Dashboard({ journey }: DashboardProps) {
     [habitId, router],
   );
 
-  const handleReset = useCallback(async () => {
-    const res = await fetch("/api/habit", { method: "DELETE" });
-    if (res.ok) router.refresh();
-    else toast.error("Couldn't reset. Try again.");
-  }, [router]);
+  const switchHabit = useCallback(
+    (id: string) => {
+      if (id !== habitId) router.push(`/app?habit=${id}`);
+    },
+    [habitId, router],
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (
+      !window.confirm(
+        `Delete "${habit.habitName}" and its check-ins? This can't be undone.`,
+      )
+    )
+      return;
+    setDeleting(true);
+    const res = await fetch(`/api/habit?habitId=${habitId}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      router.push("/app");
+      router.refresh();
+    } else {
+      setDeleting(false);
+      toast.error("Couldn't delete that habit. Try again.");
+    }
+  }, [habit.habitName, habitId, router]);
 
   return (
     <main className="mx-auto w-full max-w-6xl space-y-5 px-4 py-8 sm:px-6">
+      {/* Greeting + account controls */}
       <FadeIn className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          Hi, <span className="font-medium text-foreground">{name}</span> 👋
+        </p>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <SignOutButton />
+        </div>
+      </FadeIn>
+
+      {/* Habit switcher */}
+      <FadeIn delay={0.03} className="flex flex-wrap items-center gap-2">
+        {habits.map((h) => {
+          const active = h.id === habitId;
+          return (
+            <button
+              key={h.id}
+              onClick={() => switchHabit(h.id)}
+              aria-current={active}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                active
+                  ? "border-primary bg-primary/10 font-medium text-primary"
+                  : "border-border hover:border-primary/40 hover:bg-muted",
+              )}
+            >
+              <span>{emojiFor(h.category)}</span>
+              <span className="max-w-[12rem] truncate">{h.habitName}</span>
+            </button>
+          );
+        })}
+        <Link
+          href="/app/new"
+          className="inline-flex items-center gap-1.5 rounded-full border border-dashed px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+        >
+          <Plus className="size-4" aria-hidden />
+          Add habit
+        </Link>
+      </FadeIn>
+
+      {/* Current habit title */}
+      <FadeIn delay={0.05} className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl shadow-sm ring-1 ring-primary/15">
-            {emoji}
+            {emojiFor(habit.category)}
           </div>
           <div>
             <p className="text-sm text-muted-foreground">
@@ -94,14 +162,16 @@ export function Dashboard({ journey }: DashboardProps) {
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <Button variant="ghost" size="sm" onClick={handleReset}>
-            <RotateCcw aria-hidden />
-            Change habit
-          </Button>
-          <SignOutButton />
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={deleting}
+          onClick={handleDelete}
+          className="text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 aria-hidden />
+          Delete
+        </Button>
       </FadeIn>
 
       {/* Tab bar */}
@@ -163,8 +233,9 @@ export function Dashboard({ journey }: DashboardProps) {
       )}
 
       {tab === "progress" && (
-        <FadeIn key="progress">
+        <FadeIn key="progress" className="space-y-5">
           <ProgressPanel journey={journey} />
+          <BadgesCard journey={journey} />
         </FadeIn>
       )}
     </main>

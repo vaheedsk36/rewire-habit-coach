@@ -25,3 +25,12 @@ export interface JourneyRecord {
   startedAt: string;
   checkIns: CheckIn[];
 }
+
+/** Lightweight habit row for the habit switcher (no plan/check-ins). */
+export interface HabitSummary {
+  id: string;
+  habitName: string;
+  category: string;
+  goalType: "quit" | "reduce";
+  startedAt: string;
+}
