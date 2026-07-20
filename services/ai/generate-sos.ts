@@ -27,7 +27,7 @@ export async function generateSos(
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
     });
 
-    void logUsage(supabase, "sos", model, usage);
+    await logUsage(supabase, "sos", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };

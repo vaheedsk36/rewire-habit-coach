@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { OPENAI_MODELS, MODEL_BY_ID } from "@/constants/openai-models";
+import type { AdminModel } from "@/constants/openai-models";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,14 +51,18 @@ const num = (n: number) => n.toLocaleString();
 
 export function AdminPanel({
   currentModel,
+  models,
   summary,
 }: {
   currentModel: string;
+  models: AdminModel[];
   summary: UsageSummary;
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState(currentModel);
   const [saving, setSaving] = useState(false);
+
+  const byId = new Map(models.map((m) => [m.id, m]));
 
   async function save() {
     setSaving(true);
@@ -69,7 +73,7 @@ export function AdminPanel({
     });
     setSaving(false);
     if (res.ok) {
-      toast.success(`Model set to ${MODEL_BY_ID[selected]?.label ?? selected}`);
+      toast.success(`Model set to ${byId.get(selected)?.label ?? selected}`);
       router.refresh();
     } else {
       toast.error("Couldn't update the model.");
@@ -116,7 +120,7 @@ export function AdminPanel({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {OPENAI_MODELS.map((m) => (
+                {models.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.label}
                   </SelectItem>
@@ -128,9 +132,9 @@ export function AdminPanel({
               Save
             </Button>
           </div>
-          {MODEL_BY_ID[selected]?.note && (
+          {byId.get(selected)?.note && (
             <p className="text-sm text-muted-foreground">
-              {MODEL_BY_ID[selected]?.note}
+              {byId.get(selected)?.note}
             </p>
           )}
           <p className="text-xs text-muted-foreground">
@@ -149,7 +153,9 @@ export function AdminPanel({
             <CardTitle>Pricing</CardTitle>
           </div>
           <CardDescription>
-            USD per 1M tokens (indicative — verify at openai.com/pricing).
+            Models are fetched live from your OpenAI key; prices are USD per 1M
+            tokens (indicative — &ldquo;—&rdquo; means unpriced; verify at
+            openai.com/pricing).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -163,7 +169,7 @@ export function AdminPanel({
                 </tr>
               </thead>
               <tbody>
-                {OPENAI_MODELS.map((m) => (
+                {models.map((m) => (
                   <tr
                     key={m.id}
                     className={m.id === currentModel ? "text-primary" : ""}
@@ -174,8 +180,14 @@ export function AdminPanel({
                         <span className="ml-1.5 text-xs">(active)</span>
                       )}
                     </td>
-                    <td className="py-2 pr-4 tabular-nums">${m.inputPer1M.toFixed(2)}</td>
-                    <td className="py-2 tabular-nums">${m.outputPer1M.toFixed(2)}</td>
+                    <td className="py-2 pr-4 tabular-nums">
+                      {m.inputPer1M === null ? "—" : `$${m.inputPer1M.toFixed(2)}`}
+                    </td>
+                    <td className="py-2 tabular-nums">
+                      {m.outputPer1M === null
+                        ? "—"
+                        : `$${m.outputPer1M.toFixed(2)}`}
+                    </td>
                   </tr>
                 ))}
               </tbody>

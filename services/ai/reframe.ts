@@ -65,7 +65,7 @@ export async function generateReframe(
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
     });
 
-    void logUsage(supabase, "reframe", model, usage);
+    await logUsage(supabase, "reframe", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };

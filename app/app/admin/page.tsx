@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import { getConfiguredModelId } from "@/services/ai/client";
-import { estimateCost } from "@/constants/openai-models";
+import { fetchChatModels } from "@/services/ai/openai-models";
+import {
+  estimateCost,
+  mergeWithPricing,
+  MODEL_BY_ID,
+} from "@/constants/openai-models";
 import { AdminPanel, type UsageSummary } from "@/components/admin/admin-panel";
 
 interface UsageRow {
@@ -67,12 +72,32 @@ export default async function AdminPage() {
   if (!isAdmin(user.email)) redirect("/app");
 
   const currentModel = await getConfiguredModelId(supabase);
+
+  // Live model list from OpenAI, overlaid with our maintained pricing.
+  const liveIds = await fetchChatModels();
+  const models = mergeWithPricing(liveIds);
+  // Always include the current model in the picker, even if the live list misses it.
+  if (!models.some((m) => m.id === currentModel)) {
+    const p = MODEL_BY_ID[currentModel];
+    models.unshift({
+      id: currentModel,
+      label: p?.label ?? currentModel,
+      inputPer1M: p?.inputPer1M ?? null,
+      outputPer1M: p?.outputPer1M ?? null,
+      note: p?.note,
+    });
+  }
+
   const { data } = await supabase
     .from("rewire_ai_usage")
     .select("feature,model,input_tokens,output_tokens")
     .returns<UsageRow[]>();
 
   return (
-    <AdminPanel currentModel={currentModel} summary={summarize(data ?? [])} />
+    <AdminPanel
+      currentModel={currentModel}
+      models={models}
+      summary={summarize(data ?? [])}
+    />
   );
 }

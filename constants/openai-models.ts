@@ -75,3 +75,31 @@ export function estimateCost(
     (outputTokens / 1_000_000) * m.outputPer1M
   );
 }
+
+/** A model for the admin UI: id + label + pricing where we have it (else null). */
+export interface AdminModel {
+  id: string;
+  label: string;
+  inputPer1M: number | null;
+  outputPer1M: number | null;
+  note?: string;
+}
+
+/**
+ * Merge a live model list (from the OpenAI API) with our maintained pricing.
+ * Models we have no price for get null pricing (shown as "—"). Falls back to the
+ * curated list when the live fetch returns nothing (no key / API error).
+ */
+export function mergeWithPricing(liveIds: string[]): AdminModel[] {
+  const ids = liveIds.length ? liveIds : OPENAI_MODELS.map((m) => m.id);
+  return ids.map((id) => {
+    const p = MODEL_BY_ID[id];
+    return {
+      id,
+      label: p?.label ?? id,
+      inputPer1M: p?.inputPer1M ?? null,
+      outputPer1M: p?.outputPer1M ?? null,
+      note: p?.note,
+    };
+  });
+}

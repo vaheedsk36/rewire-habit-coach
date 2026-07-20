@@ -1,4 +1,5 @@
 import { streamText } from "ai";
+import { after } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CoachMessage, JourneyRecord } from "@/types";
 import { AI_TIMEOUT_MS, getConfiguredModelId, getModel } from "./client";
@@ -27,15 +28,17 @@ export async function streamCoachReply(
     abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
   });
 
-  // Usage resolves after the stream completes; log it without blocking the response.
-  void (async () => {
+  // Usage only resolves once the stream finishes. `after()` runs the log after
+  // the response is sent AND is kept alive by the platform (unlike a bare
+  // fire-and-forget, which a serverless function can drop when it freezes).
+  after(async () => {
     try {
       const usage = await result.usage;
       await logUsage(supabase, "coach", model, usage);
     } catch {
       // never let telemetry affect the stream
     }
-  })();
+  });
 
   return result;
 }

@@ -92,7 +92,7 @@ export async function generateReflection(
       providerOptions: AI_PROVIDER_OPTIONS,
     });
 
-    void logUsage(supabase, "reflection", model, usage);
+    await logUsage(supabase, "reflection", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };

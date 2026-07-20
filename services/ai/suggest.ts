@@ -34,7 +34,7 @@ export async function generateSuggestion(
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
     });
 
-    void logUsage(supabase, "suggest", model, usage);
+    await logUsage(supabase, "suggest", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };

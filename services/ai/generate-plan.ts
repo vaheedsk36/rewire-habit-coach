@@ -29,7 +29,7 @@ export async function generatePlan(
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
     });
 
-    void logUsage(supabase, "plan", model, usage);
+    await logUsage(supabase, "plan", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };
