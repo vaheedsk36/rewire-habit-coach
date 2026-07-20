@@ -29,6 +29,6 @@ export async function POST(request: Request) {
   const journey = await getJourney(supabase, parsed.data.habitId);
   if (!journey) return serverError("Habit not found.");
 
-  const result = await generateReflection(journey);
+  const result = await generateReflection(supabase, journey);
   return resultResponse(result);
 }

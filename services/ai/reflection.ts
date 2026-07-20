@@ -1,4 +1,5 @@
 import { generateObject } from "ai";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { JourneyRecord } from "@/types";
 import {
   reflectionResponseSchema,
@@ -6,7 +7,8 @@ import {
 } from "@/types/reflection";
 import { categoryLabel } from "@/constants/habits";
 import { currentStreak, daysSince, totalWins } from "@/lib/streak";
-import { AI_TIMEOUT_MS, getModel } from "./client";
+import { AI_TIMEOUT_MS, getConfiguredModelId, getModel } from "./client";
+import { logUsage } from "./usage";
 import { toAiError } from "./errors";
 
 /**
@@ -74,11 +76,13 @@ function buildReflectionContext(journey: JourneyRecord): string {
  * typed error so the API route stays thin.
  */
 export async function generateReflection(
+  supabase: SupabaseClient,
   journey: JourneyRecord,
 ): Promise<ReflectionResult> {
   try {
-    const { object } = await generateObject({
-      model: getModel(),
+    const model = await getConfiguredModelId(supabase);
+    const { object, usage } = await generateObject({
+      model: getModel(model),
       schema: reflectionResponseSchema,
       system: REFLECTION_SYSTEM_PROMPT,
       prompt: buildReflectionContext(journey),
@@ -88,6 +92,7 @@ export async function generateReflection(
       providerOptions: AI_PROVIDER_OPTIONS,
     });
 
+    void logUsage(supabase, "reflection", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };

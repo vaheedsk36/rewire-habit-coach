@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const parsed = await parseBody(request, habitInputSchema);
   if (!parsed.ok) return parsed.response;
 
-  const plan = await generatePlan(parsed.data);
+  const plan = await generatePlan(supabase, parsed.data);
   if (!plan.ok) return resultResponse(plan);
 
   try {

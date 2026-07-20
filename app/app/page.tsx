@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getHabits, getJourney } from "@/services/db/journey";
+import { isAdmin } from "@/lib/admin";
 import { Onboarding } from "@/components/onboarding/onboarding";
 import { Dashboard } from "@/components/dashboard/dashboard";
 
@@ -46,6 +47,7 @@ export default async function AppHome({
       journey={journey}
       habits={habits}
       name={displayName(user.user_metadata ?? {}, user.email ?? undefined)}
+      isAdmin={isAdmin(user.email)}
     />
   );
 }

@@ -18,6 +18,6 @@ export async function POST(request: Request) {
   const parsed = await parseBody(request, reframeRequestSchema);
   if (!parsed.ok) return parsed.response;
 
-  const result = await generateReframe(parsed.data);
+  const result = await generateReframe(supabase, parsed.data);
   return resultResponse(result);
 }

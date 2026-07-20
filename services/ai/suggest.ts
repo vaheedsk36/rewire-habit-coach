@@ -1,7 +1,9 @@
 import { generateObject } from "ai";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { suggestionSchema } from "@/types/suggest";
 import type { SuggestRequest, SuggestResult } from "@/types/suggest";
-import { AI_TIMEOUT_MS, getModel } from "./client";
+import { AI_TIMEOUT_MS, getConfiguredModelId, getModel } from "./client";
+import { logUsage } from "./usage";
 import { toAiError } from "./errors";
 
 // Prompts are inline (not in prompt.ts) because this feature owns a single short
@@ -13,15 +15,17 @@ const SUGGEST_SYSTEM_PROMPT =
   "helpful concrete defaults over vague ones.";
 
 /**
- * Suggests onboarding form values from the raw habit name a real LLM call, with
- * the same structured-output + timeout + typed-result contract as generatePlan.
+ * Suggests onboarding form values from the raw habit name via a real LLM call,
+ * with the same configured-model + usage-logging + typed-result contract as generatePlan.
  */
 export async function generateSuggestion(
+  supabase: SupabaseClient,
   input: SuggestRequest,
 ): Promise<SuggestResult> {
   try {
-    const { object } = await generateObject({
-      model: getModel(),
+    const model = await getConfiguredModelId(supabase);
+    const { object, usage } = await generateObject({
+      model: getModel(model),
       schema: suggestionSchema,
       system: SUGGEST_SYSTEM_PROMPT,
       prompt: `The habit the user wants to change: "${input.habitName}". Suggest form values.`,
@@ -30,6 +34,7 @@ export async function generateSuggestion(
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
     });
 
+    void logUsage(supabase, "suggest", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };

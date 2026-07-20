@@ -24,7 +24,8 @@ export async function POST(request: Request) {
     const journey = await getActiveJourney(supabase);
     if (!journey) return serverError("Start a habit before chatting with your coach.");
 
-    const result = streamCoachReply(
+    const result = await streamCoachReply(
+      supabase,
       journey,
       parsed.data.message,
       parsed.data.history,

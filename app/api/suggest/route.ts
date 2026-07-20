@@ -18,6 +18,6 @@ export async function POST(request: Request) {
   const parsed = await parseBody(request, suggestRequestSchema);
   if (!parsed.ok) return parsed.response;
 
-  const result = await generateSuggestion(parsed.data);
+  const result = await generateSuggestion(supabase, parsed.data);
   return resultResponse(result);
 }

@@ -10,6 +10,7 @@ import {
   ListChecks,
   Plus,
   Settings,
+  ShieldCheck,
   Trash2,
   TrendingUp,
 } from "lucide-react";
@@ -44,6 +45,7 @@ interface DashboardProps {
   journey: JourneyRecord;
   habits: HabitSummary[];
   name: string;
+  isAdmin: boolean;
 }
 
 type Tab = "today" | "plan" | "progress";
@@ -58,7 +60,7 @@ const emojiFor = (category: string) =>
   HABIT_CATEGORIES.find((c) => c.value === category)?.emoji ?? "🎯";
 
 /** Tabbed home with a habit switcher — track and switch between multiple habits. */
-export function Dashboard({ journey, habits, name }: DashboardProps) {
+export function Dashboard({ journey, habits, name, isAdmin }: DashboardProps) {
   const router = useRouter();
   const { habit, plan, habitId } = journey;
   const [tab, setTab] = useState<Tab>(
@@ -118,6 +120,18 @@ export function Dashboard({ journey, habits, name }: DashboardProps) {
         </p>
         <div className="flex items-center gap-1">
           <ThemeToggle />
+          {isAdmin && (
+            <Link
+              href="/app/admin"
+              aria-label="Admin"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon-sm" }),
+                "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <ShieldCheck className="size-4" aria-hidden />
+            </Link>
+          )}
           <Link
             href="/app/settings"
             aria-label="Settings"

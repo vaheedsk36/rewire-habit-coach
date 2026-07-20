@@ -1,10 +1,12 @@
 import { generateObject } from "ai";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   reframeResponseSchema,
   type ReframeRequest,
   type ReframeResult,
 } from "@/types/reframe";
-import { AI_TIMEOUT_MS, getModel } from "./client";
+import { AI_TIMEOUT_MS, getConfiguredModelId, getModel } from "./client";
+import { logUsage } from "./usage";
 import { toAiError } from "./errors";
 
 /**
@@ -48,11 +50,13 @@ function buildReframePrompt(input: ReframeRequest): string {
  * timeout, and any thrown value normalised to a typed error for the caller.
  */
 export async function generateReframe(
+  supabase: SupabaseClient,
   input: ReframeRequest,
 ): Promise<ReframeResult> {
   try {
-    const { object } = await generateObject({
-      model: getModel(),
+    const model = await getConfiguredModelId(supabase);
+    const { object, usage } = await generateObject({
+      model: getModel(model),
       schema: reframeResponseSchema,
       system: REFRAME_SYSTEM_PROMPT,
       prompt: buildReframePrompt(input),
@@ -61,6 +65,7 @@ export async function generateReframe(
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
     });
 
+    void logUsage(supabase, "reframe", model, usage);
     return { ok: true, data: object };
   } catch (error) {
     return { ok: false, error: toAiError(error) };
