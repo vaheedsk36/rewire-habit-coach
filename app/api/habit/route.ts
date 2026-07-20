@@ -33,13 +33,11 @@ export async function POST(request: Request) {
 
   try {
     const habitId = await createHabit(supabase, user.id, parsed.data, plan.data);
-    if (user.email) {
-      void sendPlanReadyEmail({
-        to: user.email,
-        habitName: parsed.data.habitName,
-        plan: plan.data,
-      }).catch(() => {});
-    }
+    // Fire-and-forget: reuses the shared Resend secret via an edge function.
+    void sendPlanReadyEmail(supabase, {
+      habitName: parsed.data.habitName,
+      plan: plan.data,
+    }).catch(() => {});
     return NextResponse.json<HabitResult>({ ok: true, data: { habitId } });
   } catch {
     return serverError("We generated your plan but couldn't save it. Try again.");
