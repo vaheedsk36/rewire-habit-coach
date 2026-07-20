@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ListChecks,
   Plus,
+  Settings,
   Trash2,
   TrendingUp,
 } from "lucide-react";
@@ -17,7 +18,8 @@ import { toast } from "sonner";
 import type { CheckIn, HabitSummary, JourneyRecord } from "@/types";
 import { categoryLabel, HABIT_CATEGORIES } from "@/constants/habits";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useBadgeCelebration } from "@/hooks/use-badge-celebration";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FadeIn } from "@/components/motion/motion";
@@ -25,6 +27,7 @@ import { PlanView } from "@/components/plan/plan-view";
 import { TrackerCard } from "@/components/tracker/tracker-card";
 import { ProgressPanel } from "@/components/progress/progress-panel";
 import { BadgesCard } from "@/components/progress/badges-card";
+import { ReflectionCard } from "@/components/progress/reflection-card";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
@@ -62,6 +65,9 @@ export function Dashboard({ journey, habits, name }: DashboardProps) {
     journey.checkIns.length === 0 ? "plan" : "today",
   );
   const [deleting, setDeleting] = useState(false);
+
+  // Confetti + toast when a new achievement is earned (e.g. after a check-in).
+  useBadgeCelebration(journey);
 
   const handleCheckIn = useCallback(
     async (checkIn: CheckIn) => {
@@ -112,6 +118,16 @@ export function Dashboard({ journey, habits, name }: DashboardProps) {
         </p>
         <div className="flex items-center gap-1">
           <ThemeToggle />
+          <Link
+            href="/app/settings"
+            aria-label="Settings"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon-sm" }),
+              "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Settings className="size-4" aria-hidden />
+          </Link>
           <SignOutButton />
         </div>
       </FadeIn>
@@ -235,6 +251,7 @@ export function Dashboard({ journey, habits, name }: DashboardProps) {
       {tab === "progress" && (
         <FadeIn key="progress" className="space-y-5">
           <ProgressPanel journey={journey} />
+          <ReflectionCard journey={journey} />
           <BadgesCard journey={journey} />
         </FadeIn>
       )}
