@@ -27,18 +27,13 @@ coverage/
 # Vercel
 .vercel
 
-# Expo / React Native (apps/mobile)
-.expo/
-web-build/
+# React Native (apps/mobile) — bare workflow: ios/ and android/ ARE committed.
+# Build artifacts within them are ignored by apps/mobile/.gitignore.
 *.orig.*
-# Generated native projects (managed workflow / CNG)
-apps/*/ios/
-apps/*/android/
-# Native signing material
+# Native release-signing material (debug.keystore stays committed)
 *.jks
 *.p8
 *.p12
-*.key
 *.mobileprovision
 
 # OS / editor
