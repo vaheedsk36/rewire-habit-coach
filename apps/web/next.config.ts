@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // @rewire/core ships raw TypeScript source; Next must transpile it.
+  transpilePackages: ["@rewire/core"],
 };
 
 export default nextConfig;
